@@ -1,24 +1,63 @@
 import cv2 as cv
 import numpy as np
+from PIL import ImageGrab
 
 # 744
 
-sizeOnScreen = (600, 600)
+class ScreenHandler:        
+        screenImg = cv.imread("screenshot.png", cv.IMREAD_COLOR)
+        
+        tempImg = cv.imread("greenboard.png", cv.IMREAD_COLOR)
 
-img = cv.imread("screenshot.png", cv.IMREAD_COLOR)
-templ = cv.resize(cv.imread("greenboard.png", cv.IMREAD_COLOR), sizeOnScreen, interpolation= cv.INTER_LINEAR)
+        alphaChannel = np.array(cv.split(tempImg)[3])
+        maskImg = cv.merge([alphaChannel, alphaChannel, alphaChannel])
+        
+        sizeOnScreen = tempImg.shape[:2]
 
-print(img.shape)
-print(templ.shape)
+        minScale = float(40)
+        maxScale = float(90)
+        initialScaleStepPercentage = float(5)
+        
+        def FindBestPosition(self):
+                closestValue = float
+                closestPosition = cv.typing.Point()
+                closestScale = float
+                
+                scaleStepPercentage = self.initialScaleStepPercentage
+                
+                totalScaleSteps = self.updateTotalScaleSteps(self.initialScaleStepPercentage)
+                
+                while (totalScaleSteps <= 1):
+                        if(scaleStepPercentage == self.initialScaleStepPercentage):
+                                for scale in np.fliplr(np.linspace(self.minScale, self.maxScale, totalScaleSteps)):        
+                                        scaledTempImg = cv.resize(self.tempImg, self.sizeOnScreen * scale, interpolation = cv.INTER_LINEAR)
+                                        scaledMaskImg = cv.resize(self.maskImg, self.sizeOnScreen * scale, interpolation = cv.INTER_LINEAR)
+                                
+                                        _, bestValue, _, bestLocation = cv.minMaxLoc(cv.matchTemplate(self.screenImg, scaledTempImg, cv.TM_CCORR_NORMED, None, scaledMaskImg))
+                                
+                                        if(bestValue > closest):
+                                                closestValue = bestValue
+                                        else:
+                                                scaleStepPercentage -= 1
+                                                break
+                        else:
+                                for scale in np.fliplr(np.linspace(self.minScale, self.maxScale, totalScaleSteps)):        
+                                        scaledTempImg = cv.resize(self.tempImg, self.sizeOnScreen * scale, interpolation = cv.INTER_LINEAR)
+                                        scaledMaskImg = cv.resize(self.maskImg, self.sizeOnScreen * scale, interpolation = cv.INTER_LINEAR)
+                                
+                                        _, bestValue, _, bestLocation = cv.minMaxLoc(cv.matchTemplate(self.screenImg, scaledTempImg, cv.TM_CCORR_NORMED, None, scaledMaskImg))
+                                
+                                        if(bestValue > closest):
+                                                closest = bestValue
+                                        else:
+                                                scaleStepPercentage -= 1
+                                                break
+                                
+        
+        def _getTotalScaleSteps(self, scaleStepPercentage: float):
+                return (self.maxScale - self.minScale) / scaleStepPercentage
+                
 
-alpha_channel = np.array(cv.split(cv.resize(cv.imread("greenboard_mask.png", cv.IMREAD_UNCHANGED), sizeOnScreen, interpolation= cv.INTER_LINEAR))[3]) 
-mask = cv.merge([alpha_channel, alpha_channel, alpha_channel])
 
-print(mask.shape)
 
-result = cv.matchTemplate(img, templ, cv.TM_CCORR_NORMED, None, mask)
-min_val, max_val, min_loc, max_loc = cv.minMaxLoc(result)
-print('Highest correlation WITH mask', max_val)
-print(f"{min_loc} {max_loc}")
-print(result.max())
-print(result.min())
+
