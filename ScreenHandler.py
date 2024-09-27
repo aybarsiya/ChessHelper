@@ -1,6 +1,6 @@
 import cv2 as cv
 import numpy as np
-from PIL import ImageGrab
+# from PIL import ImageGrab as imgGrab
 
 # 744
 
@@ -8,15 +8,11 @@ class ScreenHandler:
         _screenImg = cv.imread("screenshot2.png", cv.IMREAD_COLOR)
         
         _tempImg = cv.imread("greenboard.png", cv.IMREAD_COLOR)
-        
-        print(_tempImg.shape)
 
         _alphaChannel = np.array(cv.imread("greenboard_mask.png", cv.IMREAD_UNCHANGED)[:,:,3])
         _maskImg = cv.merge([_alphaChannel, _alphaChannel, _alphaChannel])
         
         _sizeOnScreen = _tempImg.shape[:2]
-        
-        print(_sizeOnScreen)
 
         _minScale = 0.4
         _maxScale = 0.9
@@ -34,7 +30,7 @@ class ScreenHandler:
                 
                 print(totalScaleSteps)
                 
-                print(np.linspace(self._minScale, self._maxScale, totalScaleSteps), np.linspace(self._minScale, self._maxScale, totalScaleSteps)[::-1], sep = "\n\n")
+                print(np.linspace(self._minScale, self._maxScale, totalScaleSteps), np.linspace(self._minScale, self._maxScale, totalScaleSteps)[:-1], sep = "\n\n")
                 
                 scaledSizeOnScreen = (0, 0)
                 
@@ -56,7 +52,7 @@ class ScreenHandler:
                         else:
                                 break
                         
-                scaleStepPercentage = 0.003
+                scaleStepPercentage = 0.002
                 
                 upScaledSizeOnScreen = (int(self._sizeOnScreen[0] * (closestScale + scaleStepPercentage)), int(self._sizeOnScreen[1] * (closestScale + scaleStepPercentage)))
                 downScaledSizeOnScreen = (int(self._sizeOnScreen[0] * (closestScale - scaleStepPercentage)), int(self._sizeOnScreen[1] * (closestScale - scaleStepPercentage)))
@@ -81,6 +77,8 @@ class ScreenHandler:
 
                 print(scaleStepPercentage, upBestValue, downBestValue)
                 closestScale += scaleStepPercentage
+                
+                closestScaledSizeOnScreen = (0, 0)
                         
                 while(True):
                         scaledSizeOnScreen = (int(self._sizeOnScreen[0] * (closestScale + scaleStepPercentage)), int(self._sizeOnScreen[1] * (closestScale + scaleStepPercentage)))
@@ -90,18 +88,20 @@ class ScreenHandler:
                         
                         _, bestValue, _, bestLocation = cv.minMaxLoc(cv.matchTemplate(self._screenImg, scaledTempImg, cv.TM_CCORR_NORMED, None, scaledMaskImg))
                         
-                        print(f"zaaaa {bestValue}")
+                        print(f"bv {bestValue}")
                 
                         if(bestValue > closestValue):
                                 closestValue = bestValue
                                 closestPosition = bestLocation
                                 closestScale += scaleStepPercentage
                                 
+                                closestScaledSizeOnScreen = scaledSizeOnScreen
+                                
                                 print(scaledSizeOnScreen, bestValue, closestScale, sep = '\n')
                         else:
                                 break
                 
-                print(closestValue, closestPosition, closestScale, sep = '\n')
+                print("===== RESULTS: ", "\nClosest Matching Value: ", closestValue, "\nClosest Matching Position: ", closestPosition, "\nClosest Matching Scale: ", closestScale, "\nClosest Matching Size: ", closestScaledSizeOnScreen, sep = '')
 
 
                                 
