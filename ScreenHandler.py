@@ -113,3 +113,8 @@ sh = ScreenHandler()
 
 sh.FindBestPosition()
 
+# https://pyimagesearch.com/2015/01/26/multi-scale-template-matching-using-python-opencv/
+# https://stackoverflow.com/questions/35642497/python-opencv-cv2-matchtemplate-with-transparency
+# https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_core/py_basic_ops/py_basic_ops.html
+# https://post.bytes.com/forum/topic/python/22175-multiply-a-tuple-by-a-constant?t=28276
+# some parts of these sources are used together to come up with the algorithm above
