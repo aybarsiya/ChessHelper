@@ -5,7 +5,7 @@ from PIL import ImageGrab
 # 744
 
 class ScreenHandler:        
-        _screenImg = cv.imread("screenshot.png", cv.IMREAD_COLOR)
+        _screenImg = cv.imread("screenshot2.png", cv.IMREAD_COLOR)
         
         _tempImg = cv.imread("greenboard.png", cv.IMREAD_COLOR)
         
@@ -39,7 +39,7 @@ class ScreenHandler:
                 scaledSizeOnScreen = (0, 0)
                 
                 for scale in np.linspace(self._minScale, self._maxScale, totalScaleSteps)[::-1]:        
-                        
+                        scaledSizeOnScreen = tuple[int]()
                         scaledSizeOnScreen = (int(self._sizeOnScreen[0] * scale), int(self._sizeOnScreen[1] * scale))
                         
                         scaledTempImg = cv.resize(self._tempImg, scaledSizeOnScreen, interpolation = cv.INTER_LINEAR)
@@ -56,10 +56,10 @@ class ScreenHandler:
                         else:
                                 break
                         
-                scaleStepPercentage = 0.01
+                scaleStepPercentage = 0.003
                 
                 upScaledSizeOnScreen = (int(self._sizeOnScreen[0] * (closestScale + scaleStepPercentage)), int(self._sizeOnScreen[1] * (closestScale + scaleStepPercentage)))
-                downScaledSizeOnScreen = (int(self._sizeOnScreen[0] * (closestScale - scaleStepPercentage)), int(self._sizeOnScreen[1] * (closestScale + scaleStepPercentage)))
+                downScaledSizeOnScreen = (int(self._sizeOnScreen[0] * (closestScale - scaleStepPercentage)), int(self._sizeOnScreen[1] * (closestScale - scaleStepPercentage)))
                 
                 scaledTempImg = cv.resize(self._tempImg, upScaledSizeOnScreen, interpolation = cv.INTER_LINEAR)
                 scaledMaskImg = cv.resize(self._maskImg, upScaledSizeOnScreen, interpolation = cv.INTER_LINEAR)
@@ -79,15 +79,18 @@ class ScreenHandler:
                         closestValue = upBestValue
                         closestPosition = upBestLocation
 
+                print(scaleStepPercentage, upBestValue, downBestValue)
                 closestScale += scaleStepPercentage
                         
                 while(True):
-                        scaledSizeOnScreen = (int(self._sizeOnScreen[0] * (closestScale + scaleStepPercentage)), int(self._sizeOnScreen[1] * scale))
+                        scaledSizeOnScreen = (int(self._sizeOnScreen[0] * (closestScale + scaleStepPercentage)), int(self._sizeOnScreen[1] * (closestScale + scaleStepPercentage)))
                         
                         scaledTempImg = cv.resize(self._tempImg, scaledSizeOnScreen, interpolation = cv.INTER_LINEAR)
                         scaledMaskImg = cv.resize(self._maskImg, scaledSizeOnScreen, interpolation = cv.INTER_LINEAR)
                         
                         _, bestValue, _, bestLocation = cv.minMaxLoc(cv.matchTemplate(self._screenImg, scaledTempImg, cv.TM_CCORR_NORMED, None, scaledMaskImg))
+                        
+                        print(f"zaaaa {bestValue}")
                 
                         if(bestValue > closestValue):
                                 closestValue = bestValue
