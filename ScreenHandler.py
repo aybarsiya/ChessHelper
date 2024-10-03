@@ -1,6 +1,9 @@
 import cv2 as cv
 import numpy as np
+<<<<<<< HEAD
 import time
+=======
+>>>>>>> 0460dc7b22607c5d51d827ff6694252ddcde0f6b
 # from PIL import ImageGrab as imgGrab
 
 # 744
@@ -8,7 +11,11 @@ import time
 class ScreenHandler:        
         _screenImg = cv.imread("screenshot2.png", cv.IMREAD_COLOR)
         
+<<<<<<< HEAD
         _tempImg = cv.imread(r"resources\board\greenboard.png", cv.IMREAD_COLOR)
+=======
+        _tempImg = cv.imread("greenboard.png", cv.IMREAD_COLOR)
+>>>>>>> 0460dc7b22607c5d51d827ff6694252ddcde0f6b
 
         _alphaChannel = np.array(cv.imread(r"resources\board\greenboard_mask.png", cv.IMREAD_UNCHANGED)[:,:,3])
         _maskImg = cv.merge([_alphaChannel, _alphaChannel, _alphaChannel])
@@ -31,6 +38,11 @@ class ScreenHandler:
                 
                 print(totalScaleSteps)
                 
+<<<<<<< HEAD
+=======
+                print(np.linspace(self._minScale, self._maxScale, totalScaleSteps), np.linspace(self._minScale, self._maxScale, totalScaleSteps)[:-1], sep = "\n\n")
+                
+>>>>>>> 0460dc7b22607c5d51d827ff6694252ddcde0f6b
                 scaledSizeOnScreen = (0, 0)
                 
                 startTime = time.time()
