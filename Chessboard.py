@@ -1,15 +1,16 @@
 from Enums import *
 
 class Chessboard:
-        initialized = bool(0)
-        
+        _initialized = bool(0)
         
         
         def __init__(self):
                 
                                 
                 
-                self.initialized = bool(1)
+                self._initialized = bool(1)
+                
+        def __
                 
                 
 class Square:
