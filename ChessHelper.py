@@ -2,39 +2,16 @@
     This is the main class of the whole program. Main loops are initialized and handled here.
 """
 
-import asyncio
-from Singleton import *
+import asyncio as aio
 
 
-class Main(Singleton):        
-        teststring = "test"
+class Main:        
         
-        def testing(self):
-                self.teststring = "test2"
         
-                print(self.teststring)
-                
-        def testing2(self):
-                print(self.teststring)
-                
-        def testing3(self):
-                self.teststring = "test3"
+        pass
                 
                 
-        
 
-m = Main()
-n = Main()
-
-m.testing()
-n.testing2()
-n.testing3()
-m.testing2()
-
-print(m)
-print(n)
-print(m == n)
-print(type(m))
 
 class ChessHelper:
         """

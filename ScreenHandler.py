@@ -3,17 +3,13 @@ import numpy as np
 import time
 # from PIL import ImageGrab as imgGrab
 
-# 744
-
 class ScreenHandler:        
-        _screenImg = cv.imread("screenshot2.png", cv.IMREAD_COLOR)
         
+        _screenImg = cv.imread("screenshot2.png", cv.IMREAD_COLOR)        
         _tempImg = cv.imread(r"resources\board\greenboard.png", cv.IMREAD_COLOR)
-
-        _alphaChannel = np.array(cv.imread(r"resources\board\greenboard_mask.png", cv.IMREAD_UNCHANGED)[:,:,3])
-        _maskImg = cv.merge([_alphaChannel, _alphaChannel, _alphaChannel])
+        _maskImg = cv.merge([cv.imread(r"resources\board\greenboard_mask.png", cv.IMREAD_UNCHANGED)[:,:,3] * 3])
         
-        _sizeOnScreen = _tempImg.shape[:2]
+        _sizeOnScreen = tuple(_tempImg.shape[:2])
 
         _minScale = 0.4
         _maxScale = 0.9
@@ -39,8 +35,8 @@ class ScreenHandler:
                         scaledSizeOnScreen = tuple[int]()
                         scaledSizeOnScreen = (int(self._sizeOnScreen[0] * scale), int(self._sizeOnScreen[1] * scale))
                         
-                        scaledTempImg = cv.resize(self._tempImg, scaledSizeOnScreen, interpolation = cv.INTER_LINEAR)
-                        scaledMaskImg = cv.resize(self._maskImg, scaledSizeOnScreen, interpolation = cv.INTER_LINEAR)
+                        scaledTempImg = cv.resize(self._tempImg, scaledSizeOnScreen, interpolation = cv.INTER_AREA)
+                        scaledMaskImg = cv.resize(self._maskImg, scaledSizeOnScreen, interpolation = cv.INTER_AREA)
                 
                         _, bestValue, _, bestLocation = cv.minMaxLoc(cv.matchTemplate(self._screenImg, scaledTempImg, cv.TM_CCORR_NORMED, None, scaledMaskImg))
                 
@@ -58,12 +54,12 @@ class ScreenHandler:
                 upScaledSizeOnScreen = (int(self._sizeOnScreen[0] * (closestScale + scaleStepPercentage)), int(self._sizeOnScreen[1] * (closestScale + scaleStepPercentage)))
                 downScaledSizeOnScreen = (int(self._sizeOnScreen[0] * (closestScale - scaleStepPercentage)), int(self._sizeOnScreen[1] * (closestScale - scaleStepPercentage)))
                 
-                scaledTempImg = cv.resize(self._tempImg, upScaledSizeOnScreen, interpolation = cv.INTER_LINEAR)
-                scaledMaskImg = cv.resize(self._maskImg, upScaledSizeOnScreen, interpolation = cv.INTER_LINEAR)
+                scaledTempImg = cv.resize(self._tempImg, upScaledSizeOnScreen, interpolation = cv.INTER_AREA)
+                scaledMaskImg = cv.resize(self._maskImg, upScaledSizeOnScreen, interpolation = cv.INTER_AREA)
                 _, upBestValue, _, upBestLocation = cv.minMaxLoc(cv.matchTemplate(self._screenImg, scaledTempImg, cv.TM_CCORR_NORMED, None, scaledMaskImg))
                 
-                scaledTempImg = cv.resize(self._tempImg, downScaledSizeOnScreen, interpolation = cv.INTER_LINEAR)
-                scaledMaskImg = cv.resize(self._maskImg, downScaledSizeOnScreen, interpolation = cv.INTER_LINEAR)
+                scaledTempImg = cv.resize(self._tempImg, downScaledSizeOnScreen, interpolation = cv.INTER_AREA)
+                scaledMaskImg = cv.resize(self._maskImg, downScaledSizeOnScreen, interpolation = cv.INTER_AREA)
                 _, downBestValue, _, downBestLocation = cv.minMaxLoc(cv.matchTemplate(self._screenImg, scaledTempImg, cv.TM_CCORR_NORMED, None, scaledMaskImg))
                 
                 if(downBestValue > upBestValue):
@@ -84,8 +80,8 @@ class ScreenHandler:
                 while(True):
                         scaledSizeOnScreen = (int(self._sizeOnScreen[0] * (closestScale + scaleStepPercentage)), int(self._sizeOnScreen[1] * (closestScale + scaleStepPercentage)))
                         
-                        scaledTempImg = cv.resize(self._tempImg, scaledSizeOnScreen, interpolation = cv.INTER_LINEAR)
-                        scaledMaskImg = cv.resize(self._maskImg, scaledSizeOnScreen, interpolation = cv.INTER_LINEAR)
+                        scaledTempImg = cv.resize(self._tempImg, scaledSizeOnScreen, interpolation = cv.INTER_AREA)
+                        scaledMaskImg = cv.resize(self._maskImg, scaledSizeOnScreen, interpolation = cv.INTER_AREA)
                         
                         _, bestValue, _, bestLocation = cv.minMaxLoc(cv.matchTemplate(self._screenImg, scaledTempImg, cv.TM_CCORR_NORMED, None, scaledMaskImg))
                         
