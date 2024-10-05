@@ -1,0 +1,8 @@
+1;
+10 percent increments check to find the best range
+
+2;
+2 percent increments to pinpoint closer
+
+3;
+0.2 percent increments to pinpoint the exact location
