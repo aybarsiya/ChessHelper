@@ -1,4 +1,4 @@
-from Enums import *
+from Enums import Piece, Colour
 
 class Chessboard:
         _initialized = bool(0)
@@ -6,15 +6,10 @@ class Chessboard:
         
         def __init__(self):
                 
-                                
+                
                 
                 self._initialized = bool(1)
-                
-        def __
-                
-                
+
 class Square:
-        posX = " "
-        posY = int(0)
         piece = Piece.EMPTY.value
-        colour = int(-1)
+        colour = Colour
