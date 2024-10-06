@@ -1,6 +1,6 @@
 from enum import Enum
 
-class Piece(Enum):
+class _Piece(Enum):
         EMPTY = 0
         PAWN = 1
         KNIGHT = 2
@@ -12,5 +12,17 @@ class Piece(Enum):
         @classmethod
         def _missing_(cls, value):
                 return cls.EMPTY
+
+class _Colour(Enum):
+        EMPTY = 0
+        WHITE = 1
+        BLACK = 2
         
+        @classmethod
+        def _missing_(cls, value):
+                return cls.EMPTY
+
+Piece = _Piece
+Colour = _Colour
+
 MS_PER_FRAME = 16.6
