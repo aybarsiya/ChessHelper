@@ -10,23 +10,23 @@ class ChessHelper:
         """
         from MenuHandler import MenuHandler
         from Getch import Getch
-        
+
         MH = MenuHandler()
-        
-        
+
+
         async def Controller(self):
-                
-                
+
+
                 pass
-        
-        
+
+
         async def PlayMode(self):
                 """
                         This async function handles the operations while playing a chess game.
-                        
+
                 """
                 from Chessboard import CB
-                
+
                 pass
 
 """

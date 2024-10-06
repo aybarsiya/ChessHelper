@@ -2,7 +2,7 @@ class _Getch:
         def __init__(self):
                 try: self.impl = self._GetchWindows()
                 except ImportError: self.impl = self._GetchUnix()
-        def __call__(self): return self.impl()        
+        def __call__(self): return self.impl()
         class _GetchUnix:
                 def __call__(self):
                         from sys import stdin; import tty, termios

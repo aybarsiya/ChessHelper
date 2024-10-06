@@ -6,7 +6,7 @@ class _Piece():
         ROOK = 4
         QUEEN = 5
         KING = 6
-        
+
         def Stringify(toStringify: int) -> str:
                 if(toStringify >= 0 and toStringify <= 6):
                         match toStringify:
@@ -23,7 +23,7 @@ class _Colour():
         EMPTY = 0
         WHITE = 1
         BLACK = 2
-        
+
         def Stringify(toStringify: int) -> str:
                 if(toStringify >= 0 and toStringify <= 2):
                         match toStringify:
