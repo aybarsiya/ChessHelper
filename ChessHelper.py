@@ -25,8 +25,7 @@ class ChessHelper:
                         This async function handles the operations while playing a chess game.
                         
                 """
-                import Chessboard
-                
+                from Chessboard import CB
                 
                 pass
 
@@ -35,4 +34,4 @@ class ChessHelper:
 """
 CH = ChessHelper()
 with aio.Runner() as runner:
-    runner.run(CH.Controller())
+    runner.run(CH.PlayMode())

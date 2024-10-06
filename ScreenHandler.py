@@ -5,7 +5,7 @@ import asyncio as aio
 
 from PIL import ImageGrab as IG
 
-class ScreenHandler:        
+class ScreenHandler:
         
         _screenImgUntouched = cv.imread("screenshot2.png", cv.IMREAD_GRAYSCALE)        
         _tempImgUntouched = cv.imread(r"resources\board\greenboard.png", cv.IMREAD_GRAYSCALE)
@@ -88,6 +88,11 @@ class ScreenHandler:
                                                 
                 return tuple[bestValue, bestLocation]
         
+        def _CompareImgs(self, oldImg: cv.typing.MatLike, newImg: cv.typing.MatLike) -> bool:
+                _, bestValue, _, bestLocation = cv.minMaxLoc(cv.matchTemplate(oldImg, newImg, cv.TM_CCORR_NORMED, None))
+                if(bestValue == 1): return True
+                return False
+        
         def _DownsizeImgs(self):
                 
                 if(self._downsizedScale != None) and (round(self._downsizedScale, 3) == round(self._downsizeScale, 3)): return
@@ -103,7 +108,7 @@ class ScreenHandler:
         def _TakeScreenshot(self):
                 
                 return cv.cvtColor(np.array(IG.grab().convert("RGB"))[:, :, ::-1], cv.COLOR_BGR2GRAY)
-                
+        
 
 sh = ScreenHandler()
 aio.run((sh.FindChessboardPosition()))

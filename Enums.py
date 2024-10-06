@@ -1,6 +1,4 @@
-from enum import Enum
-
-class _Piece(Enum):
+class _Piece():
         EMPTY = 0
         PAWN = 1
         KNIGHT = 2
@@ -9,20 +7,32 @@ class _Piece(Enum):
         QUEEN = 5
         KING = 6
         
-        @classmethod
-        def _missing_(cls, value):
-                return cls.EMPTY
+        def Stringify(toStringify: int) -> str:
+                if(toStringify >= 0 and toStringify <= 6):
+                        match toStringify:
+                                case 0: return "EMPTY"
+                                case 1: return "PAWN"
+                                case 2: return "KNIGHT"
+                                case 3: return "BISHOP"
+                                case 4: return "ROOK"
+                                case 5: return "QUEEN"
+                                case 6: return "KING"
+                return "EMPTY"
 
-class _Colour(Enum):
+class _Colour():
         EMPTY = 0
         WHITE = 1
         BLACK = 2
         
-        @classmethod
-        def _missing_(cls, value):
-                return cls.EMPTY
+        def Stringify(toStringify: int) -> str:
+                if(toStringify >= 0 and toStringify <= 2):
+                        match toStringify:
+                                case 0: return "EMPTY"
+                                case 1: return "WHITE"
+                                case 2: return "BLACK"
+                return "EMPTY"
 
-Piece = _Piece
-Colour = _Colour
+PieceTypeEnum = _Piece
+PieceColourEnum = _Colour
 
 MS_PER_FRAME = 16.6

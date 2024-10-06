@@ -3,7 +3,6 @@ class MenuHandler:
 
 
 class _MainMenu:
-        
 
         pass
 
