@@ -46,6 +46,9 @@ class ScreenHandler:
                 await aio.sleep(3)
                 self._screenImg = cv.Canny(cv.imread("screenshot4.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 5)
                 await self.CalculateChessboardScaleWithPiece()
+                await aio.sleep(3)
+                self._screenImg = cv.Canny(cv.imread("screenshot5.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 5)
+                await self.CalculateChessboardScaleWithPiece()
 
         async def CalculateChessboardScaleWithPiece(self):
 
@@ -89,6 +92,9 @@ class ScreenHandler:
                                 print(result)
                                 print("------")
 
+                                # FIX THIS
+                                # this if else statement need some small adjustments to get closer to the truest results
+                                # error variation can go up to 3.5% sometimes but should not compromise piece finding applications
                                 if(result[0] > bestValue and (round((round((result[0] - bestValue), 6) / round((bestValue / 100.0), 6)), 3) > 0.700) or bestValue < 0.300):
                                         bestScale = possibleBestScale
                                         bestValue = result[0]
