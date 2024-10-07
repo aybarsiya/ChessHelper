@@ -6,9 +6,16 @@ import asyncio as aio
 
 from PIL import ImageGrab as IG
 
+from ResourceHandler import BoardImg, PieceImgs
+
 class ScreenHandler:
 
-        _screenImg = cv.imread("screenshot.png", cv.IMREAD_GRAYSCALE)
+        _screenImg = cv.Canny(cv.imread("screenshot3.png", cv.IMREAD_GRAYSCALE), 225, 255)
+
+
+
+
+        #print(_screenImg)
         _tempImg = cv.imread(r"resources\board\greenboard.png", cv.IMREAD_GRAYSCALE)
         _maskImg = cv.merge([cv.imread(r"resources\board\greenboard_mask.png", cv.IMREAD_UNCHANGED)[:,:,3]])
 
@@ -16,7 +23,6 @@ class ScreenHandler:
         _blackKingMaskImg = cv.merge([cv.imread(r"resources\pieces\black\k.png", cv.IMREAD_UNCHANGED)[:,:,3]])
 
         _tempMaxScale = float()
-        _tempScaledSize = (0, 0)
         _tempLocation = (0, 0)
 
         def __init__(self):
@@ -46,11 +52,44 @@ class ScreenHandler:
 
         async def CalculateChessboardScaleWithPiece(self):
 
+                startTime = time.time()
+                screenImg = cv.Canny(ScreenHandler._TakeScreenshot(), 225, 255)
+                # remove below when in production
+                screenImg = self._screenImg
 
+                bestScale = self._tempMaxScale
+                bestValue = [0.0]
+                bestLocation = (0, 0)
 
+                sweeps = (0.100, 0.010, 0.002)
+                down = -1.0
 
+                for i in range(len(sweeps)):
 
-                pass
+                        while(True):
+
+                                print(bestScale)
+                                result = ScreenHandler._GetScaledBestValues(bestScale, screenImg, self._tempImg, self._maskImg)
+                                print(result)
+                                print("------")
+
+                                if(result[0] > bestValue[-1]):
+                                        bestScale = round((bestScale + (sweeps[i] * down)), 3)
+
+                                        bestValue.append(result[0])
+                                        bestLocation = result[1]
+                                else:
+                                        bestScale = round((bestScale + (sweeps[i] * (down * -1.0))), 3)
+
+                                        if(result[0] > bestValue[-2] and round((bestScale + (sweeps[i] * down)), 3) > 0.500):
+                                                down = -1.0
+                                                print(bestValue[-2])
+                                        else:
+                                                down = 1.0
+
+                                        bestValue = [0.0]
+
+                                        break
 
         async def FindChessboardPosition(self):
 
@@ -58,7 +97,7 @@ class ScreenHandler:
 
                 screenImg = ScreenHandler._TakeScreenshot()
 
-                sweeps = (0.05, 0)
+                sweeps = (0.01, 0)
 
                 print("|||||||||||||||||||||||||||||||||||||||||||||")
 
@@ -68,9 +107,9 @@ class ScreenHandler:
 
                 down = -1.0
 
-                while(bestScale >= 0.5):
+                while(bestScale >= 0.45):
                         print(bestScale)
-                        result = ScreenHandler._GetScaledBestValues(bestScale, self._screenImg, self._blackKingTempImg, self._blackKingMaskImg)
+                        result = ScreenHandler._GetScaledBestValues(bestScale, self._screenImg, self._blackKingTempImg)
                         print(result)
                         print("------")
                         bestScale = round((bestScale + (sweeps[0] * down)), 3)
@@ -134,9 +173,11 @@ class ScreenHandler:
                         scaledSizeOnScreen = tuple([int(x * tempImgScale) for x in tempImg.shape[:2]])
 
                         tempImg = cv.resize(tempImg, scaledSizeOnScreen, interpolation = cv.INTER_AREA)
-                        maskImg = cv.resize(maskImg, scaledSizeOnScreen, interpolation = cv.INTER_AREA)
+                        # maskImg = cv.resize(maskImg, scaledSizeOnScreen, interpolation = cv.INTER_AREA)
 
-                return ScreenHandler._GetBestValues(img, tempImg, maskImg)
+                tempImg = cv.Canny(tempImg, 225, 255)
+
+                return ScreenHandler._GetBestValues(img, tempImg)
 
         @staticmethod
         def _CompareChange(oldImg: cv.typing.MatLike, newImg: cv.typing.MatLike) -> bool:
