@@ -35,19 +35,19 @@ class ScreenHandler:
                 self._tempMaxScale = round((float(lowestWidth) / (float(tempWidth / 100.0))) / 100.0, 3)
 
         async def TestFunction(self):
-                self._screenImg = cv.Canny(cv.imread("screenshot.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 5)
+                self._screenImg = cv.Canny(cv.imread("screenshot.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 3)
                 await self.CalculateChessboardScaleWithPiece()
                 await aio.sleep(3)
-                self._screenImg = cv.Canny(cv.imread("screenshot2.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 5)
+                self._screenImg = cv.Canny(cv.imread("screenshot2.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 3)
                 await self.CalculateChessboardScaleWithPiece()
                 await aio.sleep(3)
-                self._screenImg = cv.Canny(cv.imread("screenshot3.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 5)
+                self._screenImg = cv.Canny(cv.imread("screenshot3.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 3)
                 await self.CalculateChessboardScaleWithPiece()
                 await aio.sleep(3)
-                self._screenImg = cv.Canny(cv.imread("screenshot4.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 5)
+                self._screenImg = cv.Canny(cv.imread("screenshot4.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 3)
                 await self.CalculateChessboardScaleWithPiece()
                 await aio.sleep(3)
-                self._screenImg = cv.Canny(cv.imread("screenshot5.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 5)
+                self._screenImg = cv.Canny(cv.imread("screenshot5.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 3)
                 await self.CalculateChessboardScaleWithPiece()
 
         async def CalculateChessboardScaleWithPiece(self):
@@ -125,7 +125,7 @@ class ScreenHandler:
                         if(maskImg != None):
                                 maskImg = cv.resize(maskImg, scaledSizeOnScreen, interpolation = cv.INTER_AREA)
 
-                tempImg = cv.Canny(tempImg, 0, 1, apertureSize = 5)
+                tempImg = cv.Canny(tempImg, 0, 1, apertureSize = 3)
 
                 return ScreenHandler._GetBestValues(img, tempImg, maskImg)
 
