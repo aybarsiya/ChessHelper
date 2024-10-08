@@ -1,4 +1,4 @@
-from tracemalloc import start
+from typing import Sequence
 import cv2 as cv
 import numpy as np
 import time
@@ -49,6 +49,12 @@ class ScreenHandler:
                 await aio.sleep(3)
                 self._screenImg = cv.Canny(cv.imread("screenshot5.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 3)
                 await self.CalculateChessboardScaleWithPiece()
+                await aio.sleep(3)
+                self._screenImg = cv.Canny(ScreenHandler._TakeScreenshot(), 225, 255)
+                await self.CalculateChessboardScaleWithPiece()
+                await aio.sleep(3)
+                self._screenImg = cv.Canny(cv.imread("screenshot6.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 3)
+                await self.CalculateChessboardScaleWithPiece()
 
         async def CalculateChessboardScaleWithPiece(self):
 
@@ -61,7 +67,7 @@ class ScreenHandler:
                         return (False, upResult)
 
                 startTime = time.time()
-                screenImg = cv.Canny(ScreenHandler._TakeScreenshot(), 0, 1)
+                screenImg = cv.Canny(ScreenHandler._TakeScreenshot(), 225, 255)
                 # remove below when in production
                 screenImg = self._screenImg
 
@@ -103,10 +109,15 @@ class ScreenHandler:
                                         break
 
                 print("|||||||||||||||||||||||||||||||||||||||||||||")
+                print("time took:", time.time() - startTime)
+
+                if(bestScale < 0.1):
+                        print("There is no chessboard on the screen!")
+                        return
+
                 scaledSizeOnScreen = tuple([int(x * bestScale) for x in BoardImg._self.shape[:2]])
 
                 print(bestScale, bestLocation, scaledSizeOnScreen)
-                print("time took:", time.time() - startTime)
 
         @staticmethod
         def _GetScaledBestValues(tempImgScale: float, img: cv.typing.MatLike, tempImg: cv.typing.MatLike, maskImg: cv.typing.MatLike = None) -> tuple[float, cv.typing.Point]:
@@ -116,7 +127,7 @@ class ScreenHandler:
                 else:
                         tempImgScale = round(tempImgScale, 3)
 
-                if(tempImgScale < 1):
+                if(tempImgScale < 1 and tempImgScale > 0):
 
                         scaledSizeOnScreen = tuple([int(x * tempImgScale) for x in tempImg.shape[:2]])
 
@@ -124,6 +135,8 @@ class ScreenHandler:
 
                         if(maskImg != None):
                                 maskImg = cv.resize(maskImg, scaledSizeOnScreen, interpolation = cv.INTER_AREA)
+                else:
+                        return (float(0.0), (0, 0))
 
                 tempImg = cv.Canny(tempImg, 0, 1, apertureSize = 3)
 
