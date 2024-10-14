@@ -1,3 +1,12 @@
+"""
+        Enums Module
+
+        This module is responsible for keeping enum values which are commonly used throughout the main program's modules.
+
+        Aybars Ay
+        2024
+"""
+
 class _Piece():
         EMPTY = 0
         PAWN = 1

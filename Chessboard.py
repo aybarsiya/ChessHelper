@@ -1,3 +1,12 @@
+"""
+        Chessboard Module
+
+        This module is responsible for initializing and keeping track of a Chessboard object.
+
+        Aybars Ay
+        2024
+"""
+
 from Enums import PieceTypeEnum, PieceColourEnum
 import cv2 as cv
 

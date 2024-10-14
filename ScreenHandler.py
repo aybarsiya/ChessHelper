@@ -1,4 +1,28 @@
-from typing import Sequence
+"""
+        ScreenHandler Module
+
+        This module is responsible for making several operations using image processing libraries.
+
+        Features:
+        - Taking screenshots of the main screen
+                * Only supports main screen in a multi screen setup
+        - Determining if there is a default "chess.com" chessboard on the screen
+        - If there is a chessboard on the screen
+                - Determine chessboard's scale on pixel values
+                - Determine the exact coordinates of the chessboard on the screen using the determined scale
+        - If there is no chessboard on the screen
+                - Acknowledging the situation using some "magic numbers" (lovely!)
+                - Early cancellation of the algorithm
+
+        WIP Features:
+        - Returning 64 equal sized images of the found chessboard on the screen
+                - Will be used for populating the Chessboard module's 2D "Square"s array
+
+
+        Aybars Ay
+        2024
+"""
+
 import cv2 as cv
 import numpy as np
 import time
@@ -10,12 +34,18 @@ from Enums import PieceColourEnum, PieceTypeEnum
 from ResourceHandler import BoardImg, PieceImgs
 
 class ScreenHandler:
+        """
+                This class is used for all relevant image processing and data analysis functions.
+        """
 
+        # FIXME
+        # Remove screenImg in prod
         _screenImg = cv.Canny(cv.imread("screenshot2.png", cv.IMREAD_GRAYSCALE), 225, 255)
 
+        # This scale variable is used for determining max initial scale of the chessboard
+        # that could be found on a screen.
+        # Determined by screen resolution's short side's value and applied the multiplier inside the init function.
         _tempMaxScale = float()
-        _tempLocation = (0, 0)
-
         def __init__(self):
 
                 scrShape = ScreenHandler._TakeScreenshot().shape[:2]
@@ -34,35 +64,17 @@ class ScreenHandler:
 
                 self._tempMaxScale = round((float(lowestWidth) / (float(tempWidth / 100.0))) / 100.0, 3)
 
-        async def TestFunction(self):
-                # self._screenImg = cv.Canny(cv.imread("screenshot.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 3)
-                # await self.CalculateChessboardScaleWithPiece()
-                # await aio.sleep(3)
-                # self._screenImg = cv.Canny(cv.imread("screenshot2.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 3)
-                # await self.CalculateChessboardScaleWithPiece()
-                # await aio.sleep(3)
-                # self._screenImg = cv.Canny(cv.imread("screenshot3.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 3)
-                # await self.CalculateChessboardScaleWithPiece()
-                # await aio.sleep(3)
-                # self._screenImg = cv.Canny(cv.imread("screenshot4.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 3)
-                # await self.CalculateChessboardScaleWithPiece()
-                # await aio.sleep(3)
-                # self._screenImg = cv.Canny(cv.imread("screenshot5.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 3)
-                # await self.CalculateChessboardScaleWithPiece()
-                # await aio.sleep(3)
-                # self._screenImg = cv.Canny(ScreenHandler._TakeScreenshot(), 225, 255)
-                # await self.CalculateChessboardScaleWithPiece()
-                # await aio.sleep(3)
-                # self._screenImg = cv.Canny(cv.imread("screenshot6.png", cv.IMREAD_GRAYSCALE), 0, 1, apertureSize = 3)
-                # await self.CalculateChessboardScaleWithPiece()
-
-                await self.FindChessboardOnScreen()
-                await aio.sleep(3)
 
         async def FindChessboardOnScreen(self):
+                """
+                        This function takes screenshots of the main screen and tries to find a chessboard on the screen.
+                        If found, returns the scale and the position of the chessboard.
+                        *** This function is in testing phase. Only pre-determined screenshots are used.
+                        *** There are total of 7 screenshots currently (screenshot, screenshot1-6)
+                """
 
+                # screenImg = _TakeScreenshot()
                 # FIX THIS BEFORE prod
-                self._screenImg = cv.Canny(cv.imread("screenshot.png", cv.IMREAD_GRAYSCALE), 225, 255)
                 scale = await self._GetChessboardScaleWithPieceImg()
                 screenImg = cv.imread("screenshot.png", cv.IMREAD_GRAYSCALE)
 
@@ -70,7 +82,19 @@ class ScreenHandler:
 
                 print(result)
 
+
         async def _GetChessboardScaleWithPieceImg(self):
+                """
+                        This function uses black king chess piece object from the ResourceHandler module to;
+                        - Find out if there is a chessboard on the screen
+                        - If there is, find out the scale of the chessboard with the piece image
+
+                        There are some optimizations included in the algorithm;
+                        - Only grayscale original images are used
+                        - Magic numbers to stop the algorithm going to far and possibly crashing the function
+                        - Scale steps are used for downscaling (several to increase reliability, ex: 10%, 1%, 0.2%)
+                        - Determining going up or down in between scale steps
+                """
 
                 def _IsDown(_scale: float, _scaleStep: float, _screenImg: cv.typing.MatLike):
 
@@ -112,7 +136,8 @@ class ScreenHandler:
                                 print(result)
                                 print("------")
 
-                                # FIX THIS
+                                # FIXME
+                                # MAGIC NUMBERS
                                 # this if else statement need some small adjustments to get closer to the truest results
                                 # error variation can go up to 3.5% sometimes but should not compromise piece finding applications
                                 if(result[0] > bestValue and (round((round((result[0] - bestValue), 6) / round((bestValue / 100.0), 6)), 3) > 0.700) or bestValue < 0.300):
@@ -135,8 +160,14 @@ class ScreenHandler:
 
                 return bestScale
 
+
         @staticmethod
         def _GetScaledBestValues(tempImgScale: float, img: cv.typing.MatLike, tempImg: cv.typing.MatLike, maskImg: cv.typing.MatLike = None, canny: bool = False) -> tuple[float, cv.typing.Point]:
+                """
+                        This function scales down template image to find the closest occurance on the screen.
+                        Converting both the main image and the template image to "edge detectection" resulting type images to minimize calculations
+                        Returns the best value of probability and the coordinates
+                """
 
                 if(tempImgScale > 1):
                         tempImgScale = 1
@@ -159,26 +190,37 @@ class ScreenHandler:
 
                 return ScreenHandler._GetBestValues(img, tempImg, maskImg)
 
+
         @staticmethod
         def _CompareChange(oldImg: cv.typing.MatLike, newImg: cv.typing.MatLike) -> bool:
+                """
+                        This function compares two images and determines if they are the same or not.
+                """
                 if(ScreenHandler._GetBestValues(oldImg, newImg)[0] == 1): return True
                 return False
 
+
         @staticmethod
         def _GetBestValues(img: cv.typing.MatLike, tempImg: cv.typing.MatLike, maskImg: cv.typing.MatLike = None) -> tuple[float, cv.typing.Point]:
+                """
+                        This function uses template (and possibly matching mask) image(s) to find the best probability value and the location on the main image.
+                """
                 _, bestValue, _, bestLocation = cv.minMaxLoc(cv.matchTemplate(img, tempImg, cv.TM_CCORR_NORMED, None, maskImg))
                 return (bestValue, bestLocation)
 
+        """
+                This function takes the screenshot of the main screen, converts it to opencv grayscale type image and returns it.
+        """
         @staticmethod
         def _TakeScreenshot(): return cv.cvtColor(np.array(IG.grab().convert("RGB"))[:, :, ::-1], cv.COLOR_BGR2GRAY)
 
 
 sh = ScreenHandler()
-aio.run((sh.TestFunction()))
+aio.run((sh.FindChessboardOnScreen()))
 
 # https://pyimagesearch.com/2015/01/26/multi-scale-template-matching-using-python-opencv/
 # https://stackoverflow.com/questions/35642497/python-opencv-cv2-matchtemplate-with-transparency
 # https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_core/py_basic_ops/py_basic_ops.html
 # https://post.bytes.com/forum/topic/python/22175-multiply-a-tuple-by-a-constant?t=28276
 # https://roboflow.com/use-opencv/convert-pil-image-to-cv2-image#:~:text=You%20can%20convert%20a%20PIL,BGR%20(the%20cv2%20format).
-# some parts of these sources are used together to come up with the algorithm above
+# some parts of these sources are used together to come up with the algorithms above

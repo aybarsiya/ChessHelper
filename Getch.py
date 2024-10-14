@@ -1,3 +1,24 @@
+"""
+        Getch Module
+
+        This module is responsible for real-time input logging and returning.
+
+        Features:
+        -
+
+        WIP Features:
+        - Getting mouse inputs, especially buttons
+        - Applying mouse inputs automatically
+                - Moving from A to B style algorithm
+                - Click and/or drag optionalities
+        - Applying keyboard inputs
+                - Possible chessboard finding solution in between system processes
+                        - Eliminates preperation from the user to setup the chessboard before running the main module of this program
+
+        Aybars Ay
+        2024
+"""
+
 class _Getch:
         def __init__(self):
                 try: self.impl = self._GetchWindows()
@@ -22,3 +43,43 @@ Getch = _Getch()
 
 # https://code.activestate.com/recipes/134892-getch-like-unbuffered-character-reading-from-stdin/
 # Getch class is from there (about 22 "years" ago!)
+
+import asyncio
+
+async def Loop():
+
+        while(True):
+
+                await asyncio.sleep(0.16)
+
+                key = Getch().decode()
+
+                if(key != ''):
+
+                        if(key == 'q' or key == 'Q'):
+                                break
+                        else:
+                                print(key)
+
+async def Runner():
+        task = asyncio.create_task(Loop())
+
+        await task
+
+loop = asyncio.get_event_loop()
+
+tasks = list()
+
+tasks.append(loop.create_task(Runner()))
+
+
+
+loop.run_until_complete(create_tasks_func())
+loop.close()
+
+
+
+
+
+#
+# https://stackoverflow.com/questions/58774718/asyncio-in-corroutine-runtimeerror-no-running-event-loop

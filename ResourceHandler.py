@@ -1,7 +1,28 @@
+"""
+        ResourceHandler Module
+
+        This module is responsible for initializing and keeping fast access resources organized.
+
+        Features;
+        - Locating and loading images of chess pieces
+                - To be used for;
+                        - Recognising chessboard on the screen
+                        - Recognising chess pieces on the board
+        - Keeping opencv's Matlike type image objects in the memory
+        - PieceImgs object keeps all the chess pieces and retrival is done using piece enums in the Enums module
+        - BoardImg object keep the board image
+
+        Aybars Ay
+        2024
+"""
+
 import cv2 as cv
 from Enums import PieceTypeEnum, PieceColourEnum
 
 class _TempImg():
+        """
+                This base class is designed to load both grayscale and transparency mask images from a given resource path.
+        """
 
         _self: cv.typing.MatLike
         _mask: cv.typing.MatLike
@@ -20,6 +41,11 @@ class _TempImg():
                         raise Exception("Could not read resource from given directory")
 
 class _PieceImg(_TempImg):
+        """
+                This class keeps a single chess piece information.
+                _TempImg is used as the base class to also keep the image data in one place.
+                Colour and type is also declared upon creation.
+        """
 
         colour: int = PieceColourEnum.EMPTY
         type: int = PieceTypeEnum.EMPTY
@@ -53,12 +79,18 @@ class _PieceImg(_TempImg):
                 return fullPath
 
 class _BoardImg(_TempImg):
-
+        """
+                This class loads the chessboard image using the given variable during creation.
+                _TempImg is used as base class to simplify resource loading.
+        """
         def __init__(self, resourceFullPath: str = ' ', separateMaskFullPath: str = ' '):
                 super().__init__(resourceFullPath, separateMaskFullPath)
 
 def _SetupPieceImgs():
-
+        """
+                This function initializes all pieces with their corresponding colours, types,
+                and returns a 2D array (white, black) of all chess pieces also with their image resources.
+        """
         pieceImgs = [[_PieceImg]]
         pieceImgs.pop(0)
 
