@@ -80,6 +80,9 @@ class ScreenHandler:
 
                 result = ScreenHandler._GetScaledBestValues(scale, screenImg, BoardImg._self, BoardImg._mask)
 
+                print("\nChessboard:")
+                print("Scale: ", scale)
+                print("Best Probability Score, Coordinates")
                 print(result)
 
 
@@ -131,8 +134,9 @@ class ScreenHandler:
 
                         while(True):
                                 possibleBestScale = round((bestScale + (sweeps[i] * down)), 3)
-                                print(possibleBestScale)
+                                print("Current Scale: ", possibleBestScale)
                                 result = ScreenHandler._GetScaledBestValues(possibleBestScale, screenImg, PieceImgs[PieceColourEnum.BLACK - 1][PieceTypeEnum.KING - 1]._self, canny = True)
+                                print("Best Probability Score, Best Coordinates Of Black King Piece")
                                 print(result)
                                 print("------")
 
@@ -148,6 +152,7 @@ class ScreenHandler:
                                         break
 
                 print("|||||||||||||||||||||||||||||||||||||||||||||")
+                print("Results:")
                 print("time took:", time.time() - startTime)
 
                 if(bestScale < 0.1):
@@ -156,7 +161,7 @@ class ScreenHandler:
 
                 scaledSizeOnScreen = tuple([int(x * bestScale) for x in BoardImg._self.shape[:2]])
 
-                print(bestScale, bestLocation, scaledSizeOnScreen)
+                print("Best Probable Scale:", bestScale, "Best Coordinates Of Black King Piece: ", bestLocation, "Scaled Size Of Chessboard:", scaledSizeOnScreen, sep = '\n')
 
                 return bestScale
 
