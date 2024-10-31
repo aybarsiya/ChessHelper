@@ -1,26 +1,34 @@
 """
     This is the main class of the whole program. Main loops are initialized and handled here.
 """
-import asyncio as aio
+
+import multiprocessing as mp; from multiprocessing import Process
+from time import sleep
+
+if __name__ == '__main__':
+        mp.freeze_support()
 
 class ChessHelper:
         """
                 This is the main controller object of the whole program.
                 It keeps the necessary classes' references, in order to make the necessary actions and calculations.
         """
-        from MenuHandler import MenuHandler
-        from Getch import Getch
+        from InputHandler import IH
+        from ScreenHandler import SH
 
-        MH = MenuHandler()
+        def Controller(self):
 
+                self.IH.Start()
+                Process(target = self.SH.FindChessboardOnScreen()).run()
+                print("woah")
 
-        async def Controller(self):
-
-
+                while(self.IH.running):
+                        print(self.IH.running)
+                        sleep(0.16)
                 pass
 
 
-        async def PlayMode(self):
+        def PlayMode(self):
                 """
                         This async function handles the operations while playing a chess game.
 
@@ -33,5 +41,4 @@ class ChessHelper:
         We run the ChessHelper program here.
 """
 CH = ChessHelper()
-with aio.Runner() as runner:
-    runner.run(CH.PlayMode())
+Process(target = CH.Controller()).run()

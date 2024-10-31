@@ -26,7 +26,6 @@
 import cv2 as cv
 import numpy as np
 import time
-import asyncio as aio
 
 from PIL import ImageGrab as IG
 
@@ -65,7 +64,7 @@ class ScreenHandler:
                 self._tempMaxScale = round((float(lowestWidth) / (float(tempWidth / 100.0))) / 100.0, 3)
 
 
-        async def FindChessboardOnScreen(self):
+        def FindChessboardOnScreen(self):
                 """
                         This function takes screenshots of the main screen and tries to find a chessboard on the screen.
                         If found, returns the scale and the position of the chessboard.
@@ -76,7 +75,7 @@ class ScreenHandler:
                 # screenImg = _TakeScreenshot()
                 # FIX THIS BEFORE prod
                 self._screenImg = cv.imread("screenshot.png", cv.IMREAD_GRAYSCALE)
-                scale = await self._GetChessboardScaleWithPieceImg()
+                scale = self._GetChessboardScaleWithPieceImg()
 
                 result = ScreenHandler._GetScaledBestValues(scale, self._screenImg, BoardImg._self, BoardImg._mask)
 
@@ -86,7 +85,7 @@ class ScreenHandler:
                 print(result)
 
 
-        async def _GetChessboardScaleWithPieceImg(self):
+        def _GetChessboardScaleWithPieceImg(self):
                 """
                         This function uses black king chess piece object from the ResourceHandler module to;
                         - Find out if there is a chessboard on the screen
@@ -220,8 +219,7 @@ class ScreenHandler:
         def _TakeScreenshot(): return cv.cvtColor(np.array(IG.grab().convert("RGB"))[:, :, ::-1], cv.COLOR_BGR2GRAY)
 
 
-sh = ScreenHandler()
-aio.run((sh.FindChessboardOnScreen()))
+SH = ScreenHandler()
 
 # https://pyimagesearch.com/2015/01/26/multi-scale-template-matching-using-python-opencv/
 # https://stackoverflow.com/questions/35642497/python-opencv-cv2-matchtemplate-with-transparency
