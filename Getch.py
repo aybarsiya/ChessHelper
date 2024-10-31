@@ -19,6 +19,8 @@
         2024
 """
 
+import pynput
+
 class _Getch:
         def __init__(self):
                 try: self.impl = self._GetchWindows()
@@ -44,10 +46,9 @@ Getch = _Getch()
 # https://code.activestate.com/recipes/134892-getch-like-unbuffered-character-reading-from-stdin/
 # Getch class is from there (about 22 "years" ago!)
 
-import asyncio
-
 async def Loop():
 
+        keys: list = []
         while(True):
 
                 await asyncio.sleep(0.16)
@@ -57,28 +58,10 @@ async def Loop():
                 if(key != ''):
 
                         if(key == 'q' or key == 'Q'):
+                                print(keys)
                                 break
                         else:
-                                print(key)
-
-async def Runner():
-        task = asyncio.create_task(Loop())
-
-        await task
-
-loop = asyncio.get_event_loop()
-
-tasks = list()
-
-tasks.append(loop.create_task(Runner()))
-
-
-
-loop.run_until_complete(create_tasks_func())
-loop.close()
-
-
-
+                                keys.append(key)
 
 
 #
