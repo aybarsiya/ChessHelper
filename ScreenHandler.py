@@ -75,10 +75,10 @@ class ScreenHandler:
 
                 # screenImg = _TakeScreenshot()
                 # FIX THIS BEFORE prod
+                self._screenImg = cv.imread("screenshot.png", cv.IMREAD_GRAYSCALE)
                 scale = await self._GetChessboardScaleWithPieceImg()
-                screenImg = cv.imread("screenshot.png", cv.IMREAD_GRAYSCALE)
 
-                result = ScreenHandler._GetScaledBestValues(scale, screenImg, BoardImg._self, BoardImg._mask)
+                result = ScreenHandler._GetScaledBestValues(scale, self._screenImg, BoardImg._self, BoardImg._mask)
 
                 print("\nChessboard:")
                 print("Scale: ", scale)
@@ -110,7 +110,7 @@ class ScreenHandler:
                 startTime = time.time()
                 screenImg = cv.Canny(ScreenHandler._TakeScreenshot(), 225, 255)
                 # remove below when in production
-                screenImg = self._screenImg
+                screenImg = cv.Canny(self._screenImg, 225, 255)
 
                 bestScale = self._tempMaxScale
                 initialResult = ScreenHandler._GetScaledBestValues(bestScale, screenImg, PieceImgs[PieceColourEnum.BLACK - 1][PieceTypeEnum.KING - 1]._self, canny = True)
