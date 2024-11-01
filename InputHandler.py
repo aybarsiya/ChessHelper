@@ -11,16 +11,24 @@ from pynput import keyboard
 from pynput import mouse
 from google.cloud import speech
 from Enums import MS_PER_FRAME
-import multiprocessing as mp; from multiprocessing import Process
+from threading import Thread, Lock
 from time import sleep
 
 class _InputHandler():
 
-        running = True
+        listening = True
+        update = False
 
         def Start(self):
                 self._listener = keyboard.Listener(on_press = self._KeyboardPress, on_release = self._KeyboardRelease)
                 self._listener.start()
+                Thread(target = self.Loop).start()
+
+        def Loop(self):
+                while(self.listening):
+                        sleep(0.16)
+                        print("on")
+
 
         def Stop(self):
                 self._listener.stop()
@@ -34,8 +42,11 @@ class _InputHandler():
                 print('{0} released'.format(key))
                 if key == keyboard.Key.esc:
                         # Stop listener
-                        self.running = False
+                        self.listening = False
+                        self._listener.stop()
                         return False
+                elif key == keyboard.Key.enter:
+                        self.update = True
 
 
         pass
@@ -66,6 +77,47 @@ class speechToText():
 
         pass
 
+# """PyAudio Example: Play a wave file (callback version)."""
+
+# import wave
+# import time
+# import sys
+
+# import pyaudio
+
+
+# if len(sys.argv) < 2:
+#     print(f'Plays a wave file. Usage: {sys.argv[0]} filename.wav')
+#     sys.exit(-1)
+
+# with wave.open(sys.argv[1], 'rb') as wf:
+#         # Define callback for playback (1)
+#         def callback(in_data, frame_count, time_info, status):
+#                 data = wf.readframes(frame_count)
+#                 # If len(data) is less than requested frame_count, PyAudio automatically
+#                 # assumes the stream is finished, and the stream stops.
+#                 return (data, pyaudio.paContinue)
+
+#         # Instantiate PyAudio and initialize PortAudio system resources (2)
+#         p = pyaudio.PyAudio()
+
+#         # Open stream using callback (3)
+#         stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+#                         channels=wf.getnchannels(),
+#                         rate=wf.getframerate(),
+#                         output=True,
+#                         stream_callback=callback)
+
+#         # Wait for stream to finish (4)
+#         while stream.is_active():
+#                 time.sleep(0.1)
+
+#         # Close the stream (5)
+#         stream.close()
+
+#         # Release PortAudio system resources (6)
+#         p.terminate()
+
 # https://pypi.org/project/pynput/
 # https://raspberrypi.stackexchange.com/questions/55431/read-keyboad-input-from-background-process
 # https://docs.python.org/3/library/threading.html
@@ -75,3 +127,6 @@ class speechToText():
 # https://cloud.google.com/python/docs/reference/speech/latest/google.cloud.speech_v1.services.speech.SpeechClient#google_cloud_speech_v1_services_speech_SpeechClient_long_running_recognize
 # https://googleapis.dev/python/google-api-core/latest/client_options.html
 # https://cloud.google.com/speech-to-text/docs/transcribe-client-libraries
+
+# https://people.csail.mit.edu/hubert/pyaudio/docs/#pyaudio.PyAudio.Stream.__init__
+# https://people.csail.mit.edu/hubert/pyaudio/docs/#pyaudio.PyAudio.Stream

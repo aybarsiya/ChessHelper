@@ -49,8 +49,3 @@ class Chessboard():
                                 print(i, k)
 
                 self._squares.pop(0)
-
-
-CB = Chessboard()
-CB._squares[0][0].piece = Piece(PieceColourEnum.BLACK, PieceTypeEnum.BISHOP)
-print(CB._squares[0][0].piece())

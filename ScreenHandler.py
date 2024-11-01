@@ -227,3 +227,5 @@ SH = ScreenHandler()
 # https://post.bytes.com/forum/topic/python/22175-multiply-a-tuple-by-a-constant?t=28276
 # https://roboflow.com/use-opencv/convert-pil-image-to-cv2-image#:~:text=You%20can%20convert%20a%20PIL,BGR%20(the%20cv2%20format).
 # some parts of these sources are used together to come up with the algorithms above
+
+# https://stackoverflow.com/questions/62461590/grabbing-a-specific-part-of-screen-and-making-it-an-image-that-updates-itself-in

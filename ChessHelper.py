@@ -2,11 +2,8 @@
     This is the main class of the whole program. Main loops are initialized and handled here.
 """
 
-import multiprocessing as mp; from multiprocessing import Process
+from threading import Thread
 from time import sleep
-
-if __name__ == '__main__':
-        mp.freeze_support()
 
 class ChessHelper:
         """
@@ -15,16 +12,17 @@ class ChessHelper:
         """
         from InputHandler import IH
         from ScreenHandler import SH
+        from MenuHandler import MH
 
         def Controller(self):
 
                 self.IH.Start()
-                Process(target = self.SH.FindChessboardOnScreen()).run()
+                self.findChessBoardProcess = Thread(target = self.SH.FindChessboardOnScreen)
+                self.findChessBoardProcess.start()
                 print("woah")
 
-                while(self.IH.running):
-                        print(self.IH.running)
-                        sleep(0.16)
+                Thread(target = self.MH.loop).start()
+
                 pass
 
 
@@ -41,4 +39,7 @@ class ChessHelper:
         We run the ChessHelper program here.
 """
 CH = ChessHelper()
-Process(target = CH.Controller()).run()
+
+print(CH.Controller)
+
+Thread(target = CH.Controller).start()
