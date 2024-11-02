@@ -8,34 +8,34 @@
 """
 
 class _Piece():
-        EMPTY = 0
-        PAWN = 1
-        KNIGHT = 2
-        BISHOP = 3
-        ROOK = 4
-        QUEEN = 5
-        KING = 6
+        EMPTY = -1
+        PAWN = 0
+        KNIGHT = 1
+        BISHOP = 2
+        ROOK = 3
+        QUEEN = 4
+        KING = 5
 
         def Stringify(toStringify: int) -> str:
                 match toStringify:
-                        case 1: return "PAWN"
-                        case 2: return "KNIGHT"
-                        case 3: return "BISHOP"
-                        case 4: return "ROOK"
-                        case 5: return "QUEEN"
-                        case 6: return "KING"
+                        case 0: return "PAWN"
+                        case 1: return "KNIGHT"
+                        case 2: return "BISHOP"
+                        case 3: return "ROOK"
+                        case 4: return "QUEEN"
+                        case 5: return "KING"
                         case _: return "EMPTY"
 
 
 class _Colour():
-        EMPTY = 0
-        WHITE = 1
-        BLACK = 2
+        EMPTY = -1
+        WHITE = 0
+        BLACK = 1
 
         def Stringify(toStringify: int) -> str:
                 match toStringify:
-                        case 1: return "WHITE"
-                        case 2: return "BLACK"
+                        case 0: return "WHITE"
+                        case 1: return "BLACK"
                         case _: return "EMPTY"
 
 

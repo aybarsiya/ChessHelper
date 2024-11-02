@@ -55,9 +55,12 @@ class _PieceImg(_TempImg):
                 if(not(colour > PieceColourEnum.EMPTY and colour <= PieceColourEnum.BLACK) or not(pieceType > PieceTypeEnum.EMPTY and pieceType <= PieceTypeEnum.KING)):
                         raise Exception("Colour or type of piece is not defined properly")
 
-                self.colour
+                self.colour = colour
+                self.type = pieceType
 
                 super().__init__(self._GetResourceFullPath(colour, pieceType))
+
+        def __call__(self): return (PieceColourEnum.Stringify(self.colour), PieceTypeEnum.Stringify(self.type))
 
         @staticmethod
         def _GetResourceFullPath(colour: int, pieceType: int):
@@ -65,16 +68,16 @@ class _PieceImg(_TempImg):
                 fullPath = r"resources\pieces"
 
                 match colour:
-                        case 1: fullPath += r"\white"
-                        case 2: fullPath += r"\black"
+                        case PieceColourEnum.WHITE: fullPath += r"\white"
+                        case PieceColourEnum.BLACK: fullPath += r"\black"
 
                 match pieceType:
-                        case 1: fullPath += r"\p.png"
-                        case 2: fullPath += r"\n.png"
-                        case 3: fullPath += r"\b.png"
-                        case 4: fullPath += r"\r.png"
-                        case 5: fullPath += r"\q.png"
-                        case 6: fullPath += r"\k.png"
+                        case PieceTypeEnum.PAWN: fullPath += r"\p.png"
+                        case PieceTypeEnum.KNIGHT: fullPath += r"\n.png"
+                        case PieceTypeEnum.BISHOP: fullPath += r"\b.png"
+                        case PieceTypeEnum.ROOK: fullPath += r"\r.png"
+                        case PieceTypeEnum.QUEEN: fullPath += r"\q.png"
+                        case PieceTypeEnum.KING: fullPath += r"\k.png"
 
                 return fullPath
 
@@ -97,7 +100,7 @@ def _SetupPieceImgs():
         for x in range(2):
                 pieceImgs.append([])
                 for y in range(6):
-                        pieceImgs[x].append(_PieceImg((x + 1), (y + 1)))
+                        pieceImgs[x].append(_PieceImg((x), (y)))
 
         return pieceImgs
 
