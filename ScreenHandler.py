@@ -44,7 +44,7 @@ class ScreenHandler:
         # This scale variable is used for determining max initial scale of the chessboard
         # that could be found on a screen.
         # Determined by screen resolution's short side's value and applied the multiplier inside the init function.
-        _tempMaxScale = float()
+        _maxScale = float()
         def __init__(self):
 
                 scrShape = ScreenHandler._TakeScreenshot().shape[:2]
@@ -58,10 +58,10 @@ class ScreenHandler:
                 tempWidth = BoardImg._self.shape[0]
 
                 if(tempWidth <= lowestWidth):
-                        self._tempMaxScale = 1
+                        self._maxScale = 1
                         return
 
-                self._tempMaxScale = round((float(lowestWidth) / (float(tempWidth / 100.0))) / 100.0, 3)
+                self._maxScale = round((float(lowestWidth) / (float(tempWidth / 100.0))) / 100.0, 3)
 
 
         def FindChessboardOnScreen(self):
@@ -99,7 +99,9 @@ class ScreenHandler:
                 """
 
                 def _IsDown(_scale: float, _scaleStep: float, _screenImg: cv.typing.MatLike):
-
+                        """
+                                This function determines the next step of scale calculation's direction, up or down.
+                        """
                         downResult = ScreenHandler._GetScaledBestValues((_scale - _scaleStep), _screenImg, PieceImgs[PieceColourEnum.BLACK - 1][PieceTypeEnum.KING - 1]._self, canny = True)
                         upResult = ScreenHandler._GetScaledBestValues((_scale + _scaleStep), _screenImg, PieceImgs[PieceColourEnum.BLACK - 1][PieceTypeEnum.KING - 1]._self, canny = True)
                         if(downResult[0] > upResult[0]):
@@ -111,7 +113,7 @@ class ScreenHandler:
                 # remove below when in production
                 screenImg = cv.Canny(self._screenImg, 225, 255)
 
-                bestScale = self._tempMaxScale
+                bestScale = self._maxScale
                 initialResult = ScreenHandler._GetScaledBestValues(bestScale, screenImg, PieceImgs[PieceColourEnum.BLACK - 1][PieceTypeEnum.KING - 1]._self, canny = True)
                 bestValue = initialResult[0]
                 bestLocation = initialResult[1]
@@ -133,11 +135,11 @@ class ScreenHandler:
 
                         while(True):
                                 possibleBestScale = round((bestScale + (sweeps[i] * down)), 3)
-                                print("Current Scale: ", possibleBestScale)
+                                # print("Current Scale: ", possibleBestScale)
                                 result = ScreenHandler._GetScaledBestValues(possibleBestScale, screenImg, PieceImgs[PieceColourEnum.BLACK - 1][PieceTypeEnum.KING - 1]._self, canny = True)
-                                print("Best Probability Score, Best Coordinates Of Black King Piece")
-                                print(result)
-                                print("------")
+                                # print("Best Probability Score, Best Coordinates Of Black King Piece")
+                                # print(result)
+                                # print("------")
 
                                 # FIXME
                                 # MAGIC NUMBERS
@@ -150,9 +152,9 @@ class ScreenHandler:
                                 else:
                                         break
 
-                print("|||||||||||||||||||||||||||||||||||||||||||||")
-                print("Results:")
-                print("time took:", time.time() - startTime)
+                # print("|||||||||||||||||||||||||||||||||||||||||||||")
+                # print("Results:")
+                # print("time took:", time.time() - startTime)
 
                 if(bestScale < 0.1):
                         print("There is no chessboard on the screen!")
@@ -160,7 +162,7 @@ class ScreenHandler:
 
                 scaledSizeOnScreen = tuple([int(x * bestScale) for x in BoardImg._self.shape[:2]])
 
-                print("Best Probable Scale:", bestScale, "Best Coordinates Of Black King Piece: ", bestLocation, "Scaled Size Of Chessboard:", scaledSizeOnScreen, sep = '\n')
+                # print("Best Probable Scale:", bestScale, "Best Coordinates Of Black King Piece: ", bestLocation, "Scaled Size Of Chessboard:", scaledSizeOnScreen, sep = '\n')
 
                 return bestScale
 
