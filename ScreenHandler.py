@@ -53,24 +53,24 @@ class ScreenHandler:
 
                 tempWidth = BoardImg._self.shape[0]
 
-                self._maxScale = round((float(lowestWidth) / (float(tempWidth / 100.0))) / 100.0, 3)
+                self._maxScale = round((float(lowestWidth) / (float(tempWidth / 100.0))), 3)
                 print(self._maxScale)
 
-                if(self._maxScale > 1.0):
-                        self._maxScale = 1.0
+                if(self._maxScale > 100.0):
+                        self._maxScale = 100.0
 
         def InitializeChessboard(self):
 
                 startTime = time()
                 screenImg = self._TakeScreenshot()
-                screenImg = cv.imread("screenshot.png", cv.IMREAD_GRAYSCALE)
+                screenImg = cv.imread("screenshot3.png", cv.IMREAD_GRAYSCALE)
                 scale = self._GetChessboardScale(self._maxScale, screenImg)
                 result = ScreenHandler._GetScaledBestValues(scale, screenImg, BoardImg._self, BoardImg._mask)
                 print(f"{time() - startTime}s")
                 print(result, scale, 1200 * scale)
 
         @staticmethod
-        def _GetChessboardScale(startingScale: float, screenImg: cv.typing.MatLike):
+        def _GetChessboardScale(maxScale: float, screenImg: cv.typing.MatLike):
                 """
                         This function uses black king chess piece object from the ResourceHandler module to;
                         - Find out if there is a chessboard on the screen
@@ -104,38 +104,22 @@ class ScreenHandler:
                                 return (True, downResult)
                         return (False, upResult)
 
-                print(screenImg.shape)
-                print(tuple([int(x * 2) for x in screenImg.shape[:2]])[::-1])
-                timez = time()
-                screenImg = cv.bilateralFilter(screenImg, 5, 150, 150)
-                cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\imgb.png", screenImg)
-                print(time() - timez)
-                screenImg = cv.resize(screenImg, tuple([int(x / 62 * 100) for x in screenImg.shape[:2]])[::-1], interpolation = cv.INTER_LINEAR_EXACT)
-                res = screenImg.shape
-                cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\imgr.png", screenImg)
-                timez = time()
+                screenImg = cv.bilateralFilter(screenImg, 3, 500, 500)
+                screenImg = cv.resize(screenImg, ScreenHandler._GetScaledImgSize(90, screenImg.shape), interpolation = cv.INTER_LINEAR_EXACT)
                 screenImg = cv.Canny(screenImg, 160, 255, apertureSize = 3)
-                print(time() - timez)
-                cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\imgc.png", screenImg)
-                print(screenImg.shape)
+                cv.imshow("", screenImg)
+                cv.waitKeyEx(0)
 
-                blank = screenImg
-                contours, screenImg2 = cv.findContours(screenImg, cv.RETR_TREE, cv.CHAIN_APPROX_NONE)
-                resu = cv.drawContours(blank, contours, -1, (0,255,0), 3)
-                cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\imgt.png", resu)
-
-                boardImg = cv.bilateralFilter(BoardImg._self, 3, 125, 125)
-                cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\boardb.png", boardImg)
-                boardImg = cv.Canny(boardImg, 75, 255, apertureSize = 7)
-                cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\boardc.png", boardImg)
+                # boardImg = cv.bilateralFilter(BoardImg._self, 3, 125, 125)
+                # cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\boardb.png", boardImg)
+                # boardImg = cv.Canny(boardImg, 75, 255, apertureSize = 7)
+                # cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\boardc.png", boardImg)
 
                 kingImg = PieceImgs[PieceColourEnum.WHITE][PieceTypeEnum.KING]._self
-                kingImg = cv.bilateralFilter(kingImg, 5, 130, 130)
-                cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\kingb.png", kingImg)
+                kingImg = cv.bilateralFilter(kingImg, 5, 250, 250)
                 kingImg = cv.Canny(kingImg, 240, 255, apertureSize = 3)
-                cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\kingc.png", kingImg)
 
-                bestScale = startingScale
+                bestScale = maxScale
                 initialResult = ScreenHandler._GetScaledBestValues(
                                                                                         bestScale,
                                                                                         screenImg,
@@ -197,30 +181,24 @@ class ScreenHandler:
 
                 return bestScale
 
+        @staticmethod
+        def _GetScaledImgSize(scale: float, shape):
+                return tuple([int(x / scale * 100) for x in shape[:2]])[::-1]
 
         @staticmethod
-        def _GetScaledBestValues(tempImgScale: float, img: cv.typing.MatLike, tempImg: cv.typing.MatLike, maskImg: cv.typing.MatLike = None, canny: bool = False) -> tuple[float, cv.typing.Point]:
+        def _GetScaledImgBestValues(imgScale: float, img: cv.typing.MatLike, tempImg: cv.typing.MatLike, maskImg: cv.typing.MatLike = None, canny: bool = False) -> tuple[float, cv.typing.Point]:
                 """
                         This function scales down template image to find the closest occurance on the screen.
                         Converting both the main image and the template image to "edge detection" resulting type images to minimize calculations
                         Returns the best value of probability and the coordinates
                 """
 
-                if(tempImgScale > 1):
-                        tempImgScale = 1
-                else:
-                        tempImgScale = round(tempImgScale, 3)
 
-                if(tempImgScale < 1 and tempImgScale > 0):
 
-                        scaledSizeOnScreen = tuple([int(x * tempImgScale) for x in tempImg.shape[:2]])
+                tempImg = cv.resize(tempImg, scaledSizeOnScreen, interpolation = cv.INTER_AREA)
 
-                        tempImg = cv.resize(tempImg, scaledSizeOnScreen, interpolation = cv.INTER_AREA)
-
-                        if(isinstance(maskImg, cv.typing.MatLike)):
-                                maskImg = cv.resize(maskImg, scaledSizeOnScreen, interpolation = cv.INTER_LINEAR)
-                else:
-                        return (float(0.0), (0, 0))
+                if(isinstance(maskImg, cv.typing.MatLike)):
+                        maskImg = cv.resize(maskImg, scaledSizeOnScreen, interpolation = cv.INTER_LINEAR)
 
                 if(canny):
                         tempImg = cv.Canny(tempImg, 0, 255, apertureSize = 7)
