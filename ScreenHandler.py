@@ -63,7 +63,7 @@ class ScreenHandler:
 
                 startTime = time()
                 screenImg = self._TakeScreenshot()
-                screenImg = cv.imread("screenshot2.png", cv.IMREAD_GRAYSCALE)
+                screenImg = cv.imread("screenshot5.png", cv.IMREAD_GRAYSCALE)
                 scale = self._GetChessboardScale(self._maxScale, screenImg)
                 result = ScreenHandler._GetScaledBestValues(scale, screenImg, BoardImg._self, BoardImg._mask)
                 print(f"{time() - startTime}s")
@@ -117,7 +117,7 @@ class ScreenHandler:
 
                 print(bestValue, bestScale)
 
-                sweeps = (0.100, 0.010, 0.002)
+                sweeps = (0.100, 0.010, 0.003)
                 down = -1.0
 
                 for i in range(len(sweeps)):
@@ -148,7 +148,7 @@ class ScreenHandler:
                                 print(bestValue, result[0], possibleBestScale)
                                 changePercentage = round((round((result[0] - bestValue), 6) / round((bestValue / 100.0), 6)), 3)
                                 print(changePercentage)
-                                if(((result[0] >= bestValue) and changePercentage > 15.0)):
+                                if(result[0] >= bestValue and bestValue >= 0.300):
                                         bestScale = possibleBestScale
                                         bestValue = result[0]
                                         print(bestValue, bestScale)
