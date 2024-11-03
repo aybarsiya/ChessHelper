@@ -60,12 +60,12 @@ class ScreenHandler:
 
                 startTime = time()
                 screenImg = self._TakeScreenshot()
-                screenImg = cv.imread("screenshot7.png", cv.IMREAD_GRAYSCALE)
+                screenImg = cv.imread("screenshot.png", cv.IMREAD_GRAYSCALE)
                 scale = self._GetChessboardScale(self._maxScale, screenImg)
                 print(BoardImg._self.shape, BoardImg._mask.shape)
                 result = ScreenHandler._GetScaledTempImgBestValues(scale, screenImg, BoardImg._self, BoardImg._mask)
                 print(f"{time() - startTime}s")
-                print(result, scale, 1200 * (scale / 100))
+                print(result, 1200 * (scale / 100), scale)
 
         @staticmethod
         def _GetChessboardScale(maxScale: float, screenImg: cv.typing.MatLike):
@@ -104,7 +104,7 @@ class ScreenHandler:
 
                 print(bestScale, bestValue)
 
-                sweeps = (4.0, 1.0, 0.25)
+                sweeps = (4.0, 1.0, 0.5)
                 down = -1.0
 
                 for i in range(len(sweeps)):
