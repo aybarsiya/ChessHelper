@@ -63,7 +63,7 @@ class ScreenHandler:
 
                 startTime = time()
                 screenImg = self._TakeScreenshot()
-                screenImg = cv.imread("screenshot5.png", cv.IMREAD_GRAYSCALE)
+                screenImg = cv.imread("screenshot3.png", cv.IMREAD_GRAYSCALE)
                 scale = self._GetChessboardScale(self._maxScale, screenImg)
                 result = ScreenHandler._GetScaledBestValues(scale, screenImg, BoardImg._self, BoardImg._mask)
                 print(f"{time() - startTime}s")
@@ -104,7 +104,32 @@ class ScreenHandler:
                                 return (True, downResult)
                         return (False, upResult)
 
-                screenImg = cv.Canny(cv.bilateralFilter(screenImg, 3, 75, 75), 225, 255, apertureSize = 3)
+                print(screenImg.shape)
+                print(tuple([int(x * 2) for x in screenImg.shape[:2]])[::-1])
+                timez = time()
+                screenImg = cv.bilateralFilter(screenImg, 5, 220, 220)
+                cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\imgb.png", screenImg)
+                print(time() - timez)
+                screenImg = cv.resize(screenImg, tuple([int(x / 62 * 100) for x in screenImg.shape[:2]])[::-1], interpolation = cv.INTER_LINEAR_EXACT)
+                cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\imgr.png", screenImg)
+                timez = time()
+                screenImg = cv.Canny(screenImg, 160, 255, apertureSize = 3)
+                print(time() - timez)
+                cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\imgc.png", screenImg)
+                print(screenImg.shape)
+
+                boardImg = cv.bilateralFilter(BoardImg._self, 3, 125, 125)
+                cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\boardb.png", boardImg)
+                boardImg = cv.Canny(boardImg, 75, 255, apertureSize = 7)
+                cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\boardc.png", boardImg)
+
+                kingImg = PieceImgs[PieceColourEnum.WHITE][PieceTypeEnum.KING]._self
+                kingImg = cv.bilateralFilter(kingImg, 5, 130, 130)
+                cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\kingb.png", kingImg)
+                kingImg = cv.Canny(kingImg, 240, 255, apertureSize = 3)
+                cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\kingc.png", kingImg)
+                kingImg = cv.resize(kingImg, tuple([int(x * 0.62) for x in kingImg.shape[:2]])[::-1], interpolation = cv.INTER_LINEAR_EXACT)
+                cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\kingr.png", kingImg)
 
                 bestScale = startingScale
                 initialResult = ScreenHandler._GetScaledBestValues(
@@ -189,12 +214,12 @@ class ScreenHandler:
                         tempImg = cv.resize(tempImg, scaledSizeOnScreen, interpolation = cv.INTER_AREA)
 
                         if(isinstance(maskImg, cv.typing.MatLike)):
-                                maskImg = cv.resize(maskImg, scaledSizeOnScreen, interpolation = cv.INTER_AREA)
+                                maskImg = cv.resize(maskImg, scaledSizeOnScreen, interpolation = cv.INTER_LINEAR)
                 else:
                         return (float(0.0), (0, 0))
 
                 if(canny):
-                        tempImg = cv.Canny(tempImg, 225, 255, apertureSize = 3)
+                        tempImg = cv.Canny(tempImg, 0, 255, apertureSize = 7)
 
                 return ScreenHandler._GetBestValues(img, tempImg, maskImg)
 

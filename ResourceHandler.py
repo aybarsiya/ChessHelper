@@ -34,7 +34,6 @@ class _TempImg():
 
                 try:
                         self._self = cv.imread(resourceFullPath, cv.IMREAD_GRAYSCALE)
-                        self._self = cv.bilateralFilter(self._self, 3, 125, 125)
 
                         if(separateMaskFullPath != ' '): resourceFullPath = separateMaskFullPath
                         self._mask = cv.merge([cv.imread(resourceFullPath, cv.IMREAD_UNCHANGED)[:,:,3]])
