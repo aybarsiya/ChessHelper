@@ -33,9 +33,6 @@ from Enums import PieceColourEnum, PieceTypeEnum
 from ResourceHandler import BoardImg, PieceImgs
 
 class ScreenHandler:
-        """
-                This class is used for all relevant image processing and data analysis functions.
-        """
 
         # This scale variable is used for determining max initial scale of the chessboard
         # that could be found on a screen.
@@ -63,114 +60,84 @@ class ScreenHandler:
 
                 startTime = time()
                 screenImg = self._TakeScreenshot()
-                screenImg = cv.imread("screenshot3.png", cv.IMREAD_GRAYSCALE)
+                screenImg = cv.imread("screenshot7.png", cv.IMREAD_GRAYSCALE)
                 scale = self._GetChessboardScale(self._maxScale, screenImg)
-                result = ScreenHandler._GetScaledBestValues(scale, screenImg, BoardImg._self, BoardImg._mask)
+                print(BoardImg._self.shape, BoardImg._mask.shape)
+                result = ScreenHandler._GetScaledTempImgBestValues(scale, screenImg, BoardImg._self, BoardImg._mask)
                 print(f"{time() - startTime}s")
-                print(result, scale, 1200 * scale)
+                print(result, scale, 1200 * (scale / 100))
 
         @staticmethod
         def _GetChessboardScale(maxScale: float, screenImg: cv.typing.MatLike):
-                """
-                        This function uses black king chess piece object from the ResourceHandler module to;
-                        - Find out if there is a chessboard on the screen
-                        - If there is, find out the scale of the chessboard with the piece image
 
-                        There are some optimizations included in the algorithm;
-                        - Only grayscale original images are used
-                        - Magic numbers to stop the algorithm going to far and possibly crashing the function
-                        - Scale steps are used for downscaling (several to increase reliability, ex: 10%, 1%, 0.2%)
-                        - Determining going up or down in between scale steps
-                """
+                def _IsDown(_scale: float, _scaleStep: float, _screenImg: cv.typing.MatLike, _tempImg: cv.typing.MatLike):
 
-                def _IsDown(_scale: float, _scaleStep: float, _screenImg: cv.typing.MatLike):
-                        """
-                                This function determines the next step of scale calculation's direction, up or down.
-                        """
+                        downResult = ScreenHandler._GetScaledImgBestValues(
+                                                                                                round((_scale - _scaleStep), 3),
+                                                                                                _screenImg,
+                                                                                                _tempImg,
+                                                                                                )
+                        upResult = ScreenHandler._GetScaledImgBestValues(
+                                                                                                round((_scale + _scaleStep), 3),
+                                                                                                _screenImg,
+                                                                                                _tempImg,
+                                                                                                )
 
-                        downResult = ScreenHandler._GetScaledBestValues(
-                                                                                        (_scale - _scaleStep),
-                                                                                        _screenImg,
-                                                                                        PieceImgs[PieceColourEnum.BLACK][PieceTypeEnum.KING]._self,
-                                                                                        canny = True
-                                                                                        )
-                        upResult = ScreenHandler._GetScaledBestValues(
-                                                                                        (_scale + _scaleStep),
-                                                                                        _screenImg,
-                                                                                        PieceImgs[PieceColourEnum.BLACK][PieceTypeEnum.KING]._self,
-                                                                                        canny = True
-                                                                                        )
+                        print("up: ", upResult[0], "down: ", downResult[0])
                         if(downResult[0] > upResult[0]):
                                 return (True, downResult)
                         return (False, upResult)
 
                 screenImg = cv.bilateralFilter(screenImg, 3, 500, 500)
-                screenImg = cv.resize(screenImg, ScreenHandler._GetScaledImgSize(90, screenImg.shape), interpolation = cv.INTER_LINEAR_EXACT)
-                screenImg = cv.Canny(screenImg, 160, 255, apertureSize = 3)
-                cv.imshow("", screenImg)
-                cv.waitKeyEx(0)
-
-                # boardImg = cv.bilateralFilter(BoardImg._self, 3, 125, 125)
-                # cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\boardb.png", boardImg)
-                # boardImg = cv.Canny(boardImg, 75, 255, apertureSize = 7)
-                # cv.imwrite(r"C:\Users\aybar\Desktop\schoolstuff\prog\ChessHelper\boardc.png", boardImg)
 
                 kingImg = PieceImgs[PieceColourEnum.WHITE][PieceTypeEnum.KING]._self
                 kingImg = cv.bilateralFilter(kingImg, 5, 250, 250)
                 kingImg = cv.Canny(kingImg, 240, 255, apertureSize = 3)
 
                 bestScale = maxScale
-                initialResult = ScreenHandler._GetScaledBestValues(
-                                                                                        bestScale,
-                                                                                        screenImg,
-                                                                                        PieceImgs[PieceColourEnum.BLACK][PieceTypeEnum.KING]._self,
-                                                                                        canny = True
-                                                                                        )
+                initialResult = ScreenHandler._GetScaledImgBestValues(
+                                                                                                bestScale,
+                                                                                                screenImg,
+                                                                                                kingImg,
+                                                                                                )
                 bestValue = initialResult[0]
 
-                print(bestValue, bestScale)
+                print(bestScale, bestValue)
 
-                sweeps = (0.100, 0.010, 0.003)
+                sweeps = (4.0, 1.0, 0.25)
                 down = -1.0
 
                 for i in range(len(sweeps)):
 
                         if(i > 0):
-                                _result = _IsDown(bestScale, round(sweeps[i], 3), screenImg)
+                                _result = _IsDown(bestScale, sweeps[i], screenImg, kingImg)
+
+                                if(_result[1][0] < bestValue and (i + 1) != len(sweeps)):
+                                        continue
+
                                 if(_result[0]):
                                         down = -1.0
                                 else:
                                         down = 1.0
-                                bestScale = round((bestScale + (sweeps[i] * down)), 3)
+                                bestScale = round(bestScale + (sweeps[i] * down), 3)
                                 bestValue = _result[1][0]
                                 print(bestValue, bestScale)
 
                         while(True):
-                                possibleBestScale = round((bestScale + (sweeps[i] * down)), 3)
-                                result = ScreenHandler._GetScaledBestValues(
-                                                                                                possibleBestScale,
-                                                                                                screenImg,
-                                                                                                PieceImgs[PieceColourEnum.BLACK][PieceTypeEnum.KING]._self,
-                                                                                                canny = True
-                                                                                                )
+                                possibleBestScale = round(bestScale + (sweeps[i] * down), 3)
+                                result = ScreenHandler._GetScaledImgBestValues(
+                                                                                                        possibleBestScale,
+                                                                                                        screenImg,
+                                                                                                        kingImg,
+                                                                                                        )
 
-                                # FIXME
-                                # MAGIC NUMBERS
-                                # this if else statement need some small adjustments to get closer to the truest results
-                                # error variation can go up to 3.5% sometimes but should not compromise piece finding applications
-                                print(bestValue, result[0], possibleBestScale)
-                                changePercentage = round((round((result[0] - bestValue), 6) / round((bestValue / 100.0), 6)), 3)
+                                print(possibleBestScale, result[0])
+                                changePercentage = round(((result[0] - bestValue) / (bestValue / 100.0)), 4)
                                 print(changePercentage)
-                                if(result[0] >= bestValue and bestValue >= 0.300):
+                                if(result[0] >= bestValue or (bestValue < 0.270 and changePercentage > -10.0)):
                                         bestScale = possibleBestScale
                                         bestValue = result[0]
-                                        print(bestValue, bestScale)
-                                elif(((bestValue < 0.250) and (((changePercentage > -30.0)) or (changePercentage > 15.0)))):
-                                        bestScale = possibleBestScale
-                                        bestValue = result[0]
-                                        print(bestValue, bestScale)
-
-                                        pass
+                                        print(bestScale, bestValue)
                                 else:
                                         print("broke")
                                         break
@@ -186,22 +153,22 @@ class ScreenHandler:
                 return tuple([int(x / scale * 100) for x in shape[:2]])[::-1]
 
         @staticmethod
-        def _GetScaledImgBestValues(imgScale: float, img: cv.typing.MatLike, tempImg: cv.typing.MatLike, maskImg: cv.typing.MatLike = None, canny: bool = False) -> tuple[float, cv.typing.Point]:
-                """
-                        This function scales down template image to find the closest occurance on the screen.
-                        Converting both the main image and the template image to "edge detection" resulting type images to minimize calculations
-                        Returns the best value of probability and the coordinates
-                """
+        def _GetScaledTempImgSize(scale: float, shape):
+                return tuple([int(x * (scale / 100)) for x in shape[:2]])[::-1]
 
+        @staticmethod
+        def _GetScaledImgBestValues(imgScale: float, img: cv.typing.MatLike, tempImg: cv.typing.MatLike, maskImg: cv.typing.MatLike = None) -> tuple[float, cv.typing.Point]:
 
+                img = cv.resize(img, ScreenHandler._GetScaledImgSize(imgScale, img.shape), interpolation = cv.INTER_LINEAR_EXACT)
+                img = cv.Canny(img, 160, 255, apertureSize = 3)
 
-                tempImg = cv.resize(tempImg, scaledSizeOnScreen, interpolation = cv.INTER_AREA)
+                return ScreenHandler._GetBestValues(img, tempImg, maskImg)
 
-                if(isinstance(maskImg, cv.typing.MatLike)):
-                        maskImg = cv.resize(maskImg, scaledSizeOnScreen, interpolation = cv.INTER_LINEAR)
+        @staticmethod
+        def _GetScaledTempImgBestValues(tempImgScale: float, img: cv.typing.MatLike, tempImg: cv.typing.MatLike, maskImg: cv.typing.MatLike = None):
 
-                if(canny):
-                        tempImg = cv.Canny(tempImg, 0, 255, apertureSize = 7)
+                tempImg = cv.resize(tempImg, ScreenHandler._GetScaledTempImgSize(tempImgScale, tempImg.shape), interpolation = cv.INTER_LINEAR_EXACT)
+                maskImg = cv.resize(maskImg, ScreenHandler._GetScaledTempImgSize(tempImgScale, maskImg.shape), interpolation = cv.INTER_LINEAR_EXACT)
 
                 return ScreenHandler._GetBestValues(img, tempImg, maskImg)
 
@@ -220,7 +187,7 @@ class ScreenHandler:
                 """
                         This function uses template (and possibly matching mask) image(s) to find the best probability value and the location on the main image.
                 """
-                _, bestValue, _, bestLocation = cv.minMaxLoc(cv.matchTemplate(img, tempImg, cv.TM_CCOEFF_NORMED, None, maskImg))
+                _, bestValue, _, bestLocation = cv.minMaxLoc(cv.matchTemplate(img, tempImg, cv.TM_CCORR_NORMED, None, maskImg))
                 return (bestValue, bestLocation)
 
         @staticmethod
