@@ -32,8 +32,9 @@ class _Square():
 
 
 class Chessboard():
-        _squares = [[_Square]]
 
+        _squares = [[_Square]]
+        _boxCoords = (0, 0, 0, 0)
 
         def __init__(self):
 

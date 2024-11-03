@@ -25,7 +25,7 @@
 
 import cv2 as cv
 import numpy as np
-import time
+from time import time
 
 from PIL import ImageGrab as IG
 
@@ -37,17 +37,13 @@ class ScreenHandler:
                 This class is used for all relevant image processing and data analysis functions.
         """
 
-        # FIXME
-        # Remove screenImg in prod
-        _screenImg = cv.Canny(cv.imread("screenshot2.png", cv.IMREAD_GRAYSCALE), 225, 255)
-
         # This scale variable is used for determining max initial scale of the chessboard
         # that could be found on a screen.
         # Determined by screen resolution's short side's value and applied the multiplier inside the init function.
-        _maxScale = float()
+        _maxScale: float = 1.0
         def __init__(self):
 
-                scrShape = ScreenHandler._TakeScreenshot().shape[:2]
+                scrShape = self._TakeScreenshot().shape[:2]
                 lowestWidth = 0
 
                 if(scrShape[0] < scrShape[1]):
@@ -57,35 +53,24 @@ class ScreenHandler:
 
                 tempWidth = BoardImg._self.shape[0]
 
-                if(tempWidth <= lowestWidth):
-                        self._maxScale = 1
-                        return
-
                 self._maxScale = round((float(lowestWidth) / (float(tempWidth / 100.0))) / 100.0, 3)
+                print(self._maxScale)
 
+                if(self._maxScale > 1.0):
+                        self._maxScale = 1.0
 
-        def FindChessboardOnScreen(self):
-                """
-                        This function takes screenshots of the main screen and tries to find a chessboard on the screen.
-                        If found, returns the scale and the position of the chessboard.
-                        *** This function is in testing phase. Only pre-determined screenshots are used.
-                        *** There are total of 7 screenshots currently (screenshot, screenshot1-6)
-                """
+        def InitializeChessboard(self):
 
-                # screenImg = _TakeScreenshot()
-                # FIX THIS BEFORE prod
-                self._screenImg = cv.imread("screenshot.png", cv.IMREAD_GRAYSCALE)
-                scale = self._GetChessboardScaleWithPieceImg()
+                startTime = time()
+                screenImg = self._TakeScreenshot()
+                screenImg = cv.imread("screenshot2.png", cv.IMREAD_GRAYSCALE)
+                scale = self._GetChessboardScale(self._maxScale, screenImg)
+                result = ScreenHandler._GetScaledBestValues(scale, screenImg, BoardImg._self, BoardImg._mask)
+                print(f"{time() - startTime}s")
+                print(result, scale, 1200 * scale)
 
-                result = ScreenHandler._GetScaledBestValues(scale, self._screenImg, BoardImg._self, BoardImg._mask)
-
-                print("\nChessboard:")
-                print("Scale: ", scale)
-                print("Best Probability Score, Coordinates")
-                print(result)
-
-
-        def _GetChessboardScaleWithPieceImg(self):
+        @staticmethod
+        def _GetChessboardScale(startingScale: float, screenImg: cv.typing.MatLike):
                 """
                         This function uses black king chess piece object from the ResourceHandler module to;
                         - Find out if there is a chessboard on the screen
@@ -102,21 +87,35 @@ class ScreenHandler:
                         """
                                 This function determines the next step of scale calculation's direction, up or down.
                         """
-                        downResult = ScreenHandler._GetScaledBestValues((_scale - _scaleStep), _screenImg, PieceImgs[PieceColourEnum.BLACK - 1][PieceTypeEnum.KING - 1]._self, canny = True)
-                        upResult = ScreenHandler._GetScaledBestValues((_scale + _scaleStep), _screenImg, PieceImgs[PieceColourEnum.BLACK - 1][PieceTypeEnum.KING - 1]._self, canny = True)
+
+                        downResult = ScreenHandler._GetScaledBestValues(
+                                                                                        (_scale - _scaleStep),
+                                                                                        _screenImg,
+                                                                                        PieceImgs[PieceColourEnum.BLACK][PieceTypeEnum.KING]._self,
+                                                                                        canny = True
+                                                                                        )
+                        upResult = ScreenHandler._GetScaledBestValues(
+                                                                                        (_scale + _scaleStep),
+                                                                                        _screenImg,
+                                                                                        PieceImgs[PieceColourEnum.BLACK][PieceTypeEnum.KING]._self,
+                                                                                        canny = True
+                                                                                        )
                         if(downResult[0] > upResult[0]):
                                 return (True, downResult)
                         return (False, upResult)
 
-                startTime = time.time()
-                screenImg = cv.Canny(ScreenHandler._TakeScreenshot(), 225, 255)
-                # remove below when in production
-                screenImg = cv.Canny(self._screenImg, 225, 255)
+                screenImg = cv.Canny(cv.bilateralFilter(screenImg, 3, 75, 75), 225, 255, apertureSize = 3)
 
-                bestScale = self._maxScale
-                initialResult = ScreenHandler._GetScaledBestValues(bestScale, screenImg, PieceImgs[PieceColourEnum.BLACK - 1][PieceTypeEnum.KING - 1]._self, canny = True)
+                bestScale = startingScale
+                initialResult = ScreenHandler._GetScaledBestValues(
+                                                                                        bestScale,
+                                                                                        screenImg,
+                                                                                        PieceImgs[PieceColourEnum.BLACK][PieceTypeEnum.KING]._self,
+                                                                                        canny = True
+                                                                                        )
                 bestValue = initialResult[0]
-                bestLocation = initialResult[1]
+
+                print(bestValue, bestScale)
 
                 sweeps = (0.100, 0.010, 0.002)
                 down = -1.0
@@ -131,38 +130,41 @@ class ScreenHandler:
                                         down = 1.0
                                 bestScale = round((bestScale + (sweeps[i] * down)), 3)
                                 bestValue = _result[1][0]
-                                bestLocation = _result[1][1]
+                                print(bestValue, bestScale)
 
                         while(True):
                                 possibleBestScale = round((bestScale + (sweeps[i] * down)), 3)
-                                # print("Current Scale: ", possibleBestScale)
-                                result = ScreenHandler._GetScaledBestValues(possibleBestScale, screenImg, PieceImgs[PieceColourEnum.BLACK - 1][PieceTypeEnum.KING - 1]._self, canny = True)
-                                # print("Best Probability Score, Best Coordinates Of Black King Piece")
-                                # print(result)
-                                # print("------")
+                                result = ScreenHandler._GetScaledBestValues(
+                                                                                                possibleBestScale,
+                                                                                                screenImg,
+                                                                                                PieceImgs[PieceColourEnum.BLACK][PieceTypeEnum.KING]._self,
+                                                                                                canny = True
+                                                                                                )
 
                                 # FIXME
                                 # MAGIC NUMBERS
                                 # this if else statement need some small adjustments to get closer to the truest results
                                 # error variation can go up to 3.5% sometimes but should not compromise piece finding applications
-                                if(result[0] > bestValue and (round((round((result[0] - bestValue), 6) / round((bestValue / 100.0), 6)), 3) > 0.700) or bestValue < 0.300):
+                                print(bestValue, result[0], possibleBestScale)
+                                changePercentage = round((round((result[0] - bestValue), 6) / round((bestValue / 100.0), 6)), 3)
+                                print(changePercentage)
+                                if(((result[0] >= bestValue) and changePercentage > 15.0)):
                                         bestScale = possibleBestScale
                                         bestValue = result[0]
-                                        bestLocation = result[1]
-                                else:
-                                        break
+                                        print(bestValue, bestScale)
+                                elif(((bestValue < 0.250) and (((changePercentage > -30.0)) or (changePercentage > 15.0)))):
+                                        bestScale = possibleBestScale
+                                        bestValue = result[0]
+                                        print(bestValue, bestScale)
 
-                # print("|||||||||||||||||||||||||||||||||||||||||||||")
-                # print("Results:")
-                # print("time took:", time.time() - startTime)
+                                        pass
+                                else:
+                                        print("broke")
+                                        break
 
                 if(bestScale < 0.1):
                         print("There is no chessboard on the screen!")
                         return
-
-                scaledSizeOnScreen = tuple([int(x * bestScale) for x in BoardImg._self.shape[:2]])
-
-                # print("Best Probable Scale:", bestScale, "Best Coordinates Of Black King Piece: ", bestLocation, "Scaled Size Of Chessboard:", scaledSizeOnScreen, sep = '\n')
 
                 return bestScale
 
@@ -171,7 +173,7 @@ class ScreenHandler:
         def _GetScaledBestValues(tempImgScale: float, img: cv.typing.MatLike, tempImg: cv.typing.MatLike, maskImg: cv.typing.MatLike = None, canny: bool = False) -> tuple[float, cv.typing.Point]:
                 """
                         This function scales down template image to find the closest occurance on the screen.
-                        Converting both the main image and the template image to "edge detectection" resulting type images to minimize calculations
+                        Converting both the main image and the template image to "edge detection" resulting type images to minimize calculations
                         Returns the best value of probability and the coordinates
                 """
 
@@ -211,17 +213,21 @@ class ScreenHandler:
                 """
                         This function uses template (and possibly matching mask) image(s) to find the best probability value and the location on the main image.
                 """
-                _, bestValue, _, bestLocation = cv.minMaxLoc(cv.matchTemplate(img, tempImg, cv.TM_CCORR_NORMED, None, maskImg))
+                _, bestValue, _, bestLocation = cv.minMaxLoc(cv.matchTemplate(img, tempImg, cv.TM_CCOEFF_NORMED, None, maskImg))
                 return (bestValue, bestLocation)
 
-        """
-                This function takes the screenshot of the main screen, converts it to opencv grayscale type image and returns it.
-        """
         @staticmethod
-        def _TakeScreenshot(): return cv.cvtColor(np.array(IG.grab().convert("RGB"))[:, :, ::-1], cv.COLOR_BGR2GRAY)
+        def _TakeScreenshot(bbox: tuple[int, int, int, int] = None) -> cv.typing.MatLike:
+                """
+                        This function takes the screenshot of the main screen, converts it to opencv grayscale type image and returns it.
+                """
+                # if(not(bbox == None)):
+                #         pass
+                return cv.cvtColor(np.array(IG.grab(bbox).convert("RGB"))[:, :, ::-1], cv.COLOR_BGR2GRAY)
 
 
 SH = ScreenHandler()
+SH.InitializeChessboard()
 
 # https://pyimagesearch.com/2015/01/26/multi-scale-template-matching-using-python-opencv/
 # https://stackoverflow.com/questions/35642497/python-opencv-cv2-matchtemplate-with-transparency
