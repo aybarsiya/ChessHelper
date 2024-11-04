@@ -25,7 +25,7 @@
 
 import cv2 as cv
 import numpy as np
-from time import time
+from time import perf_counter
 
 from PIL import ImageGrab as IG
 
@@ -58,14 +58,33 @@ class ScreenHandler:
 
         def InitializeChessboard(self):
 
-                startTime = time()
                 screenImg = self._TakeScreenshot()
-                screenImg = cv.imread("screenshot.png", cv.IMREAD_GRAYSCALE)
+                screenImg = cv.imread("screenshot8.png", cv.IMREAD_GRAYSCALE)
                 scale = self._GetChessboardScale(self._maxScale, screenImg)
-                print(BoardImg._self.shape, BoardImg._mask.shape)
-                result = ScreenHandler._GetScaledTempImgBestValues(scale, screenImg, BoardImg._self, BoardImg._mask)
-                print(f"{time() - startTime}s")
-                print(result, 1200 * (scale / 100), scale)
+
+                if(scale == 0.0):
+                        return
+
+                currentWidth = round(BoardImg._self.shape[0] * (scale / 100.0))
+                extra = currentWidth % 8
+
+                onePercentOfBoardWidth = round((BoardImg._self.shape[0] / 100.0), 3)
+                downScale = round((currentWidth - extra) / onePercentOfBoardWidth, 3)
+                upScale = round((currentWidth + (8 - extra)) / onePercentOfBoardWidth, 3)
+
+                print(downScale, upScale)
+
+                downResult = ScreenHandler._GetScaledTempImgBestValues(downScale, screenImg, BoardImg._self, BoardImg._mask)
+                upResult = ScreenHandler._GetScaledTempImgBestValues(upScale, screenImg, BoardImg._self, BoardImg._mask)
+
+                if(downResult > upResult):
+                        result = downResult
+                        scale = downScale
+                else:
+                        result = upResult
+                        scale = upScale
+
+                print(result, round(BoardImg._self.shape[0] * (scale / 100.0)), scale)
 
         @staticmethod
         def _GetChessboardScale(maxScale: float, screenImg: cv.typing.MatLike):
@@ -113,6 +132,7 @@ class ScreenHandler:
                                 _result = _IsDown(bestScale, sweeps[i], screenImg, kingImg)
 
                                 if(_result[1][0] < bestValue and (i + 1) != len(sweeps)):
+                                        print("broke")
                                         continue
 
                                 if(_result[0]):
@@ -137,14 +157,15 @@ class ScreenHandler:
                                 if(result[0] >= bestValue or (bestValue < 0.270 and changePercentage > -10.0)):
                                         bestScale = possibleBestScale
                                         bestValue = result[0]
-                                        print(bestScale, bestValue)
+                                        print(bestValue, bestScale)
                                 else:
                                         print("broke")
                                         break
 
-                if(bestScale < 0.1):
+                print("bestValue:", bestValue)
+                if(bestValue < 0.52):
                         print("There is no chessboard on the screen!")
-                        return
+                        return 0.0
 
                 return bestScale
 
@@ -208,6 +229,8 @@ SH.InitializeChessboard()
 # https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_core/py_basic_ops/py_basic_ops.html
 # https://post.bytes.com/forum/topic/python/22175-multiply-a-tuple-by-a-constant?t=28276
 # https://roboflow.com/use-opencv/convert-pil-image-to-cv2-image#:~:text=You%20can%20convert%20a%20PIL,BGR%20(the%20cv2%20format).
-# some parts of these sources are used together to come up with the algorithms above
 
 # https://stackoverflow.com/questions/62461590/grabbing-a-specific-part-of-screen-and-making-it-an-image-that-updates-itself-in
+# https://docs.opencv.org/4.x/d4/d86/group__imgproc__filter.html#ga9d7064d478c95d60003cf839430737ed
+
+# some parts of these sources are used together to come up with the algorithms above
