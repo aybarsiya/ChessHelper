@@ -92,6 +92,8 @@ class ScreenHandler:
                 print("total time took:", round(perf_counter() - startTime, 6), "seconds")
                 print(result, round(BoardImg._self.shape[0] * (scale / 100.0)), scale)
 
+                return (round(perf_counter() - startTime, 6), result, round(BoardImg._self.shape[0] * (scale / 100.0)), scale)
+
         @staticmethod
         def _GetChessboardScale(maxScale: float, screenImg: cv.typing.MatLike):
 
@@ -228,12 +230,18 @@ class ScreenHandler:
 
 
 SH = ScreenHandler()
+results = []
 
 for x in range(1, 9):
-        SH.InitializeChessboard(f"screenshot{x}.png")
-        sleep(2)
+        results.append(SH.InitializeChessboard(f"screenshot{x}.png"))
+        sleep(1)
 
-Thread.
+print("------------------------------")
+
+for x in range(len(results)):
+        print("total time took:", results[x][0], "seconds")
+        print(results[x][1], results[x][2], results[x][3])
+        print("-----")
 
 # https://pyimagesearch.com/2015/01/26/multi-scale-template-matching-using-python-opencv/
 # https://stackoverflow.com/questions/35642497/python-opencv-cv2-matchtemplate-with-transparency
