@@ -25,12 +25,14 @@
 
 import cv2 as cv
 import numpy as np
-from time import perf_counter
+from time import perf_counter, sleep
 
 from PIL import ImageGrab as IG
 
 from Enums import PieceColourEnum, PieceTypeEnum
 from ResourceHandler import BoardImg, PieceImgs
+
+from threading import Thread
 
 class ScreenHandler:
 
@@ -56,10 +58,13 @@ class ScreenHandler:
                 if(self._maxScale > 100.0):
                         self._maxScale = 100.0
 
-        def InitializeChessboard(self):
+        def InitializeChessboard(self, fileName):
 
                 screenImg = self._TakeScreenshot()
-                screenImg = cv.imread("screenshot8.png", cv.IMREAD_GRAYSCALE)
+                screenImg = cv.imread(fileName, cv.IMREAD_GRAYSCALE)
+
+                startTime = perf_counter()
+
                 scale = self._GetChessboardScale(self._maxScale, screenImg)
 
                 if(scale == 0.0):
@@ -84,6 +89,7 @@ class ScreenHandler:
                         result = upResult
                         scale = upScale
 
+                print("total time took:", round(perf_counter() - startTime, 6), "seconds")
                 print(result, round(BoardImg._self.shape[0] * (scale / 100.0)), scale)
 
         @staticmethod
@@ -222,7 +228,12 @@ class ScreenHandler:
 
 
 SH = ScreenHandler()
-SH.InitializeChessboard()
+
+for x in range(1, 9):
+        SH.InitializeChessboard(f"screenshot{x}.png")
+        sleep(2)
+
+Thread.
 
 # https://pyimagesearch.com/2015/01/26/multi-scale-template-matching-using-python-opencv/
 # https://stackoverflow.com/questions/35642497/python-opencv-cv2-matchtemplate-with-transparency
@@ -232,5 +243,7 @@ SH.InitializeChessboard()
 
 # https://stackoverflow.com/questions/62461590/grabbing-a-specific-part-of-screen-and-making-it-an-image-that-updates-itself-in
 # https://docs.opencv.org/4.x/d4/d86/group__imgproc__filter.html#ga9d7064d478c95d60003cf839430737ed
+
+# https://superfastpython.com/thread-return-values/
 
 # some parts of these sources are used together to come up with the algorithms above
