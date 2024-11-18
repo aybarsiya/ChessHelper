@@ -8,6 +8,7 @@
 """
 
 from Enums import PieceTypeEnum, PieceColourEnum
+from ResourceHandler import BoardImg
 import cv2 as cv
 
 class _Piece():
@@ -33,22 +34,38 @@ class _Square():
 
 class Chessboard():
 
-        _squares = [[_Square]]
-        _boxCoords = (0, 0, 0, 0)
+        squares = [[_Square]]
+
+        img: cv.typing.MatLike = None
+
+        scale: float = 0.0
+        boxCoords: tuple[int, int, int, int] = (int(0), int(0), int(0), int(0))
 
         def __init__(self):
 
-                self._squares.pop(0)
+                self.squares.pop(0)
 
                 for i in range(8):
-                        self._squares.append([])
+                        self.squares.append([])
                         for k in range(8):
-                                self._squares[i].append(_Square())
+                                self.squares[i].append(_Square())
 
                 # self.PrintChessBoard()
 
         def PrintChessBoard(self):
-                for i in range(len(self._squares)):
-                        for k in range(len(self._squares[i])):
-                                print(self._squares[i][k].piece())
+                for i in range(len(self.squares)):
+                        for k in range(len(self.squares[i])):
+                                print(self.squares[i][k].piece())
                                 print(i, k)
+
+        def SetImg(self, img: cv.typing.MatLike):
+
+                if((round(img.shape[:2][0] % 8) != 0) or (img.shape[:2][0] != img.shape[:2][1])):
+                        raise Exception("Chessboard image is not correctly sized! (side % 8 > 0 OR side[0] != side[1])")
+
+                self.img = img
+
+                squareWidth = round(self.img.shape[:2][0] / 8)
+                for i in range(8):
+                        for k in range(8):
+                                self.squares[i][k].img = self.img[(i * squareWidth):((i + 1) * squareWidth), (k * squareWidth):((k + 1) * squareWidth)]

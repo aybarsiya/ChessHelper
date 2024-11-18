@@ -8,6 +8,7 @@
 """
 
 class _Piece():
+        EMPTYDARK = -2
         EMPTY = -1
         PAWN = 0
         KNIGHT = 1

@@ -4,6 +4,7 @@
 
 from threading import Thread
 from time import sleep
+import cv2 as cv
 
 class ChessHelper:
         """
@@ -40,6 +41,18 @@ class ChessHelper:
 """
 CH = ChessHelper()
 
-print(CH.Controller)
+result = CH.SH.InitializeChessboard(f"screenshot1.png")
+cv.imshow("", result[4])
+cv.waitKeyEx(0)
 
-Thread(target = CH.Controller).start()
+from Chessboard import Chessboard
+
+cb = Chessboard()
+cb.SetImg(result[4])
+
+for i in range(8):
+        for k in range(8):
+                cv.imshow("", cb.squares[i][k].img)
+cv.waitKey(0)
+
+# Thread(target = CH.Controller).start()

@@ -36,14 +36,14 @@ from threading import Thread
 
 class ScreenHandler:
 
-        # This scale variable is used for determining max initial scale of the chessboard
-        # that could be found on a screen.
-        # Determined by screen resolution's short side's value and applied the multiplier inside the init function.
-        _maxScale: float = 1.0
-        def __init__(self):
+        @staticmethod
+        def InitializeChessboard(fileName):
 
-                scrShape = self._TakeScreenshot().shape[:2]
-                lowestWidth = 0
+                screenImg = ScreenHandler._TakeScreenshot()
+                screenImg = cv.imread(fileName, cv.IMREAD_GRAYSCALE)
+
+                scrShape = screenImg.shape[:2]
+                lowestWidth = int()
 
                 if(scrShape[0] < scrShape[1]):
                         lowestWidth = scrShape[0]
@@ -52,20 +52,12 @@ class ScreenHandler:
 
                 tempWidth = BoardImg._self.shape[0]
 
-                self._maxScale = round((float(lowestWidth) / (float(tempWidth / 100.0))), 3)
-                print(self._maxScale)
-
-                if(self._maxScale > 100.0):
-                        self._maxScale = 100.0
-
-        def InitializeChessboard(self, fileName):
-
-                screenImg = self._TakeScreenshot()
-                screenImg = cv.imread(fileName, cv.IMREAD_GRAYSCALE)
+                maxScale = round((float(lowestWidth) / (float(tempWidth / 100.0))), 3)
+                print(maxScale)
 
                 startTime = perf_counter()
 
-                scale = self._GetChessboardScale(self._maxScale, screenImg)
+                scale = ScreenHandler._GetChessboardScale(maxScale, screenImg)
 
                 if(scale == 0.0):
                         return
@@ -82,17 +74,19 @@ class ScreenHandler:
                 downResult = ScreenHandler._GetScaledTempImgBestValues(downScale, screenImg, BoardImg._self, BoardImg._mask)
                 upResult = ScreenHandler._GetScaledTempImgBestValues(upScale, screenImg, BoardImg._self, BoardImg._mask)
 
-                if(downResult > upResult):
+                if(downResult[0] > upResult[0]):
                         result = downResult
                         scale = downScale
                 else:
                         result = upResult
                         scale = upScale
 
-                print("total time took:", round(perf_counter() - startTime, 6), "seconds")
-                print(result, round(BoardImg._self.shape[0] * (scale / 100.0)), scale)
+                realWidth = round(BoardImg._self.shape[0] * (scale / 100.0))
 
-                return (round(perf_counter() - startTime, 6), result, round(BoardImg._self.shape[0] * (scale / 100.0)), scale)
+                print("total time took:", round(perf_counter() - startTime, 6), "seconds")
+                print(result, realWidth, scale)
+
+                return (round(perf_counter() - startTime, 6), result, realWidth, scale, screenImg[result[1][1]:result[1][1] + realWidth, result[1][0]:result[1][0] + realWidth])
 
         @staticmethod
         def _GetChessboardScale(maxScale: float, screenImg: cv.typing.MatLike):
@@ -230,24 +224,37 @@ class ScreenHandler:
 
 
 SH = ScreenHandler()
-results = []
 
-for x in range(1, 9):
-        results.append(SH.InitializeChessboard(f"screenshot{x}.png"))
-        sleep(1)
+def TestAll():
+        results = []
 
-print("------------------------------")
+        for x in range(1, 9):
+                results.append(SH.InitializeChessboard(f"screenshot{x}.png"))
+                sleep(1)
 
-for x in range(len(results)):
-        print("total time took:", results[x][0], "seconds")
-        print(results[x][1], results[x][2], results[x][3])
-        print("-----")
+        print("------------------------------")
+
+        totalTime = int()
+
+        for x in range(len(results)):
+                totalTime += results[x][0]
+                print("total time took:", results[x][0], "seconds")
+                print(results[x][1], results[x][2], results[x][3])
+                print("-----")
+
+        print("average time: ", round(totalTime / len(results), 6))
+
+def TestOne():
+        result = SH.InitializeChessboard(f"screenshot1.png")
+
+# TestOne()
 
 # https://pyimagesearch.com/2015/01/26/multi-scale-template-matching-using-python-opencv/
 # https://stackoverflow.com/questions/35642497/python-opencv-cv2-matchtemplate-with-transparency
 # https://docs.opencv.org/3.0-beta/doc/py_tutorials/py_core/py_basic_ops/py_basic_ops.html
 # https://post.bytes.com/forum/topic/python/22175-multiply-a-tuple-by-a-constant?t=28276
 # https://roboflow.com/use-opencv/convert-pil-image-to-cv2-image#:~:text=You%20can%20convert%20a%20PIL,BGR%20(the%20cv2%20format).
+# https://learnopencv.com/cropping-an-image-using-opencv/
 
 # https://stackoverflow.com/questions/62461590/grabbing-a-specific-part-of-screen-and-making-it-an-image-that-updates-itself-in
 # https://docs.opencv.org/4.x/d4/d86/group__imgproc__filter.html#ga9d7064d478c95d60003cf839430737ed

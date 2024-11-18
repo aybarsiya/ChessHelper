@@ -52,9 +52,6 @@ class _PieceImg(_TempImg):
 
         def __init__(self, colour: int = PieceColourEnum.EMPTY, pieceType: int = PieceTypeEnum.EMPTY):
 
-                if(not(colour > PieceColourEnum.EMPTY and colour <= PieceColourEnum.BLACK) or not(pieceType > PieceTypeEnum.EMPTY and pieceType <= PieceTypeEnum.KING)):
-                        raise Exception("Colour or type of piece is not defined properly")
-
                 self.colour = colour
                 self.type = pieceType
 
@@ -70,6 +67,7 @@ class _PieceImg(_TempImg):
                 match colour:
                         case PieceColourEnum.WHITE: fullPath += r"\white"
                         case PieceColourEnum.BLACK: fullPath += r"\black"
+                        case PieceColourEnum.EMPTY: fullPath += r"\empty"
 
                 match pieceType:
                         case PieceTypeEnum.PAWN: fullPath += r"\p.png"
@@ -78,6 +76,8 @@ class _PieceImg(_TempImg):
                         case PieceTypeEnum.ROOK: fullPath += r"\r.png"
                         case PieceTypeEnum.QUEEN: fullPath += r"\q.png"
                         case PieceTypeEnum.KING: fullPath += r"\k.png"
+                        case PieceTypeEnum.EMPTY: fullPath += r"\e.png"
+                        case PieceTypeEnum.EMPTYDARK: fullPath += r"\ed.png"
 
                 return fullPath
 
@@ -101,6 +101,10 @@ def _SetupPieceImgs():
                 pieceImgs.append([])
                 for y in range(6):
                         pieceImgs[x].append(_PieceImg((x), (y)))
+
+        pieceImgs.append([])
+        pieceImgs[2].append(_PieceImg(PieceColourEnum.EMPTY, PieceTypeEnum.EMPTY))
+        pieceImgs[2].append(_PieceImg(PieceColourEnum.EMPTY, PieceTypeEnum.EMPTYDARK))
 
         return pieceImgs
 
