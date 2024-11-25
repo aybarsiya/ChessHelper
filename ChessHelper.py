@@ -6,19 +6,20 @@ from threading import Thread
 from time import sleep
 import cv2 as cv
 
+from ScreenHandler import SH
+
 class ChessHelper:
         """
                 This is the main controller object of the whole program.
                 It keeps the necessary classes' references, in order to make the necessary actions and calculations.
         """
         from InputHandler import IH
-        from ScreenHandler import SH
         from MenuHandler import MH
 
         def Controller(self):
 
                 self.IH.Start()
-                self.findChessBoardProcess = Thread(target = self.SH.FindChessboardOnScreen)
+                self.findChessBoardProcess = Thread(target = ScreenHandler.FindChessboardOnScreen)
                 self.findChessBoardProcess.start()
                 print("woah")
 
@@ -41,18 +42,26 @@ class ChessHelper:
 """
 CH = ChessHelper()
 
-result = CH.SH.InitializeChessboard(f"screenshot1.png")
-cv.imshow("", result[4])
-cv.waitKeyEx(0)
-
 from Chessboard import Chessboard
 
-cb = Chessboard()
-cb.SetImg(result[4])
+result = SH.InitializeChessboard(f"screenshot00.png")
 
-for i in range(8):
-        for k in range(8):
-                cv.imshow("", cb.squares[i][k].img)
-cv.waitKey(0)
+if(result == None):
+        raise Exception("There is no chessboard!")
+
+CB = Chessboard(result[0], result[1], result[2], result[3])
+
+cv.imshow("", CB.img)
+
+# CB.img = cv.bilateralFilter(CB.img, 3, 500, 500)
+# cv.imshow("b", CB.img)
+# cv.waitKeyEx(0)
+
+# for i in range(8):
+#         for k in range(8):
+#                 cv.imshow("", CB.squares[i][k].img)
+# cv.waitKey(0)
+
+CB.DeterminePieces()
 
 # Thread(target = CH.Controller).start()

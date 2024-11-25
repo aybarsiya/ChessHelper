@@ -60,7 +60,7 @@ class ScreenHandler:
                 scale = ScreenHandler._GetChessboardScale(maxScale, screenImg)
 
                 if(scale == 0.0):
-                        return
+                        return None
 
                 currentWidth = round(BoardImg._self.shape[0] * (scale / 100.0))
                 extra = currentWidth % 8
@@ -74,6 +74,8 @@ class ScreenHandler:
                 downResult = ScreenHandler._GetScaledTempImgBestValues(downScale, screenImg, BoardImg._self, BoardImg._mask)
                 upResult = ScreenHandler._GetScaledTempImgBestValues(upScale, screenImg, BoardImg._self, BoardImg._mask)
 
+                algoScale = scale
+
                 if(downResult[0] > upResult[0]):
                         result = downResult
                         scale = downScale
@@ -86,7 +88,11 @@ class ScreenHandler:
                 print("total time took:", round(perf_counter() - startTime, 6), "seconds")
                 print(result, realWidth, scale)
 
-                return (round(perf_counter() - startTime, 6), result, realWidth, scale, screenImg[result[1][1]:result[1][1] + realWidth, result[1][0]:result[1][0] + realWidth])
+                croppedImg = screenImg[result[1][1]:result[1][1] + realWidth, result[1][0]:result[1][0] + realWidth]
+
+                # return (round(perf_counter() - startTime, 6), result, realWidth, scale, screenImg[result[1][1]:result[1][1] + realWidth, result[1][0]:result[1][0] + realWidth])
+                # return (scale, screenImg[result[1][1]:result[1][1] + realWidth, result[1][0]:result[1][0] + realWidth], result[1])
+                return (croppedImg, scale, result[1], algoScale)
 
         @staticmethod
         def _GetChessboardScale(maxScale: float, screenImg: cv.typing.MatLike):
@@ -173,11 +179,16 @@ class ScreenHandler:
 
         @staticmethod
         def _GetScaledImgSize(scale: float, shape):
-                return tuple([int(x / scale * 100) for x in shape[:2]])[::-1]
+                return tuple([int(round(x / scale * 100)) for x in shape[:2]])[::-1]
 
         @staticmethod
         def _GetScaledTempImgSize(scale: float, shape):
-                return tuple([int(x * (scale / 100)) for x in shape[:2]])[::-1]
+                return tuple([int(round(x * (scale / 100))) for x in shape[:2]])[::-1]
+
+        @staticmethod
+        def _GetUpscaledImg(img: cv.typing.MatLike, scale: float):
+                img = cv.resize(img, ScreenHandler._GetScaledImgSize(scale, img.shape), interpolation = cv.INTER_LINEAR_EXACT)
+                return img
 
         @staticmethod
         def _GetScaledImgBestValues(imgScale: float, img: cv.typing.MatLike, tempImg: cv.typing.MatLike, maskImg: cv.typing.MatLike = None) -> tuple[float, cv.typing.Point]:
@@ -191,7 +202,9 @@ class ScreenHandler:
         def _GetScaledTempImgBestValues(tempImgScale: float, img: cv.typing.MatLike, tempImg: cv.typing.MatLike, maskImg: cv.typing.MatLike = None):
 
                 tempImg = cv.resize(tempImg, ScreenHandler._GetScaledTempImgSize(tempImgScale, tempImg.shape), interpolation = cv.INTER_LINEAR_EXACT)
-                maskImg = cv.resize(maskImg, ScreenHandler._GetScaledTempImgSize(tempImgScale, maskImg.shape), interpolation = cv.INTER_LINEAR_EXACT)
+
+                if(isinstance(maskImg, cv.typing.MatLike)):
+                        maskImg = cv.resize(maskImg, ScreenHandler._GetScaledTempImgSize(tempImgScale, maskImg.shape), interpolation = cv.INTER_LINEAR_EXACT)
 
                 return ScreenHandler._GetBestValues(img, tempImg, maskImg)
 
@@ -222,32 +235,7 @@ class ScreenHandler:
                 #         pass
                 return cv.cvtColor(np.array(IG.grab(bbox).convert("RGB"))[:, :, ::-1], cv.COLOR_BGR2GRAY)
 
-
 SH = ScreenHandler()
-
-def TestAll():
-        results = []
-
-        for x in range(1, 9):
-                results.append(SH.InitializeChessboard(f"screenshot{x}.png"))
-                sleep(1)
-
-        print("------------------------------")
-
-        totalTime = int()
-
-        for x in range(len(results)):
-                totalTime += results[x][0]
-                print("total time took:", results[x][0], "seconds")
-                print(results[x][1], results[x][2], results[x][3])
-                print("-----")
-
-        print("average time: ", round(totalTime / len(results), 6))
-
-def TestOne():
-        result = SH.InitializeChessboard(f"screenshot1.png")
-
-# TestOne()
 
 # https://pyimagesearch.com/2015/01/26/multi-scale-template-matching-using-python-opencv/
 # https://stackoverflow.com/questions/35642497/python-opencv-cv2-matchtemplate-with-transparency

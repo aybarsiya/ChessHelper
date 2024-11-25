@@ -26,6 +26,8 @@ class _TempImg():
 
         _self: cv.typing.MatLike
         _mask: cv.typing.MatLike
+        _croppedSelf: cv.typing.MatLike
+        _croppedMask: cv.typing.MatLike
 
         def __init__(self, resourceFullPath: str = ' ', separateMaskFullPath: str = ' '):
 
@@ -39,6 +41,15 @@ class _TempImg():
                         self._mask = cv.merge([cv.imread(resourceFullPath, cv.IMREAD_UNCHANGED)[:,:,3]])
                 except:
                         raise Exception("Could not read resource from given directory")
+
+                # blurred = cv.bilateralFilter(self._self, 3, 500, 500)
+                blurred = self._self
+                x, y, w, h = cv.boundingRect(blurred)
+                self._croppedSelf = blurred[y:y + h, x:x + w]
+                self._croppedMask = self._mask[y:y + h, x:x + w]
+
+                # cv.imshow("", self._croppedSelf)
+                # cv.waitKeyEx(0)
 
 class _PieceImg(_TempImg):
         """
@@ -105,6 +116,13 @@ def _SetupPieceImgs():
         pieceImgs.append([])
         pieceImgs[2].append(_PieceImg(PieceColourEnum.EMPTY, PieceTypeEnum.EMPTY))
         pieceImgs[2].append(_PieceImg(PieceColourEnum.EMPTY, PieceTypeEnum.EMPTYDARK))
+
+        # for x in range(len(pieceImgs)):
+        #         for y in range(len(pieceImgs[x])):
+        #                 print(PieceColourEnum.Stringify(pieceImgs[x][y].colour), PieceTypeEnum.Stringify(pieceImgs[x][y].type))
+
+        # cv.imshow("", pieceImgs[2][0]._self)
+        # cv.waitKeyEx(0)
 
         return pieceImgs
 
