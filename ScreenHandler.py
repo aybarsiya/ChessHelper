@@ -71,6 +71,9 @@ class ScreenHandler:
 
                 print(downScale, upScale)
 
+                # TODO
+                # Need to implement the flipped version checking of the chessboard template image.
+
                 downResult = ScreenHandler._GetScaledTempImgBestValues(downScale, screenImg, BoardImg._self, BoardImg._mask)
                 upResult = ScreenHandler._GetScaledTempImgBestValues(upScale, screenImg, BoardImg._self, BoardImg._mask)
 
