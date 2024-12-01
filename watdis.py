@@ -1,5 +1,4 @@
 import cv2
-import numpy as np
 
 background = cv2.imread('field.jpg')
 overlay = cv2.imread('dice.png', cv2.IMREAD_UNCHANGED)  # IMREAD_UNCHANGED => open image with the alpha channel
@@ -29,8 +28,4 @@ composite = background_subsection * (1 - alpha_mask) + overlay_colors * alpha_ma
 # overwrite the section of the background image that has been updated
 background[0:h, 0:w] = composite
 
-
-# https://stackoverflow.com/questions/18394597/is-there-a-way-to-create-transparent-windows-with-tkinter
-# https://www.tcl.tk/man/tcl8.6/TkCmd/wm.htm#M9
-# https://docs.python.org/3/library/tkinter.html
-# https://www.geeksforgeeks.org/transparent-window-in-tkinter/
+cv2.imwrite('combined.png', background)

@@ -252,4 +252,6 @@ SH = ScreenHandler()
 
 # https://superfastpython.com/thread-return-values/
 
+# https://stackoverflow.com/questions/40895785/using-opencv-to-overlay-transparent-image-onto-another-image
+
 # some parts of these sources are used together to come up with the algorithms above
