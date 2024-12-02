@@ -7,51 +7,42 @@ from time import sleep
 import cv2 as cv
 
 from ScreenHandler import SH
+from InputHandler import IH
+from MenuHandler import MH
+from Chessboard import Chessboard
 
 class ChessHelper:
         """
                 This is the main controller object of the whole program.
                 It keeps the necessary classes' references, in order to make the necessary actions and calculations.
         """
-        from InputHandler import IH
-        from MenuHandler import MH
 
-        def Controller(self):
+        def Test(self):
 
-                self.IH.Start()
-                self.findChessBoardProcess = Thread(target = ScreenHandler.FindChessboardOnScreen)
-                self.findChessBoardProcess.start()
-                print("woah")
+                result = SH.InitializeChessboard(f"screenshot1.png")
 
-                Thread(target = self.MH.loop).start()
+                if(result == None):
+                        raise Exception("There is no chessboard!")
 
-                pass
+                CB = Chessboard(result[0], result[1], result[2], result[3])
 
+                cv.imshow("", CB.img)
 
-        def PlayMode(self):
-                """
-                        This async function handles the operations while playing a chess game.
+                CB.DeterminePieces()
 
-                """
-                from Chessboard import CB
+                IH.Start()
 
                 pass
+
 
 """
         We run the ChessHelper program here.
 """
 CH = ChessHelper()
+CH.Test()
 
-from Chessboard import Chessboard
 
-result = SH.InitializeChessboard(f"screenshot00.png")
 
-if(result == None):
-        raise Exception("There is no chessboard!")
-
-CB = Chessboard(result[0], result[1], result[2], result[3])
-
-cv.imshow("", CB.img)
 
 # CB.img = cv.bilateralFilter(CB.img, 3, 500, 500)
 # cv.imshow("b", CB.img)
@@ -62,6 +53,6 @@ cv.imshow("", CB.img)
 #                 cv.imshow("", CB.squares[i][k].img)
 # cv.waitKey(0)
 
-CB.DeterminePieces()
+
 
 # Thread(target = CH.Controller).start()

@@ -1,7 +1,30 @@
-import cv2
+import cv2 as cv
+import numpy as np
+from ResourceHandler import PieceImgs
 
-background = cv2.imread('field.jpg')
-overlay = cv2.imread('dice.png', cv2.IMREAD_UNCHANGED)  # IMREAD_UNCHANGED => open image with the alpha channel
+whiteKingImg = PieceImgs[0][5]._croppedSelf
+tileImg = PieceImgs[2][0]._self[0:whiteKingImg.shape[0], 0:whiteKingImg.shape[1]]
+alphaChannelNormed = PieceImgs[0][5]._croppedAlphaChannel[0:whiteKingImg.shape[0], 0:whiteKingImg.shape[1]] / 255.0
+
+print(alphaChannelNormed)
+
+cv.imshow("", whiteKingImg)
+cv.waitKeyEx(0)
+cv.imshow("", tileImg)
+cv.waitKeyEx(0)
+
+print(tileImg.shape, whiteKingImg.shape)
+
+comp = tileImg * (1.0 - alphaChannelNormed) + whiteKingImg * alphaChannelNormed
+cv.imwrite("comp.png", comp)
+comp = cv.imread("comp.png", cv.IMREAD_GRAYSCALE)
+cv.imshow("", comp)
+cv.waitKeyEx(0)
+
+
+
+background = cv.imread('field.jpg')
+overlay = cv.imread('dice.png', cv.IMREAD_UNCHANGED)  # IMREAD_UNCHANGED => open image with the alpha channel
 
 # separate the alpha channel from the color channels
 alpha_channel = overlay[:, :, 3] / 255 # convert from 0-255 to 0.0-1.0
@@ -28,4 +51,4 @@ composite = background_subsection * (1 - alpha_mask) + overlay_colors * alpha_ma
 # overwrite the section of the background image that has been updated
 background[0:h, 0:w] = composite
 
-cv2.imwrite('combined.png', background)
+cv.imwrite('combined.png', background)

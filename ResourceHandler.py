@@ -29,6 +29,9 @@ class _TempImg():
         _croppedSelf: cv.typing.MatLike
         _croppedMask: cv.typing.MatLike
 
+        _alphaChannel: cv.typing.MatLike
+        _croppedAlphaChannel: cv.typing.MatLike
+
         def __init__(self, resourceFullPath: str = ' ', separateMaskFullPath: str = ' '):
 
                 if(resourceFullPath == ' '):
@@ -38,15 +41,18 @@ class _TempImg():
                         self._self = cv.imread(resourceFullPath, cv.IMREAD_GRAYSCALE)
 
                         if(separateMaskFullPath != ' '): resourceFullPath = separateMaskFullPath
-                        self._mask = cv.merge([cv.imread(resourceFullPath, cv.IMREAD_UNCHANGED)[:,:,3]])
+
+                        self._alphaChannel = cv.imread(resourceFullPath, cv.IMREAD_UNCHANGED)[:,:,3]
+                        self._mask = cv.merge([self._alphaChannel])
                 except:
                         raise Exception("Could not read resource from given directory")
 
                 # blurred = cv.bilateralFilter(self._self, 3, 500, 500)
-                blurred = self._self
-                x, y, w, h = cv.boundingRect(blurred)
-                self._croppedSelf = blurred[y:y + h, x:x + w]
+                # blurred = self._self
+                x, y, w, h = cv.boundingRect(self._self)
+                self._croppedSelf = self._self[y:y + h, x:x + w]
                 self._croppedMask = self._mask[y:y + h, x:x + w]
+                self._croppedAlphaChannel = self._alphaChannel[y:y + h, x:x + w]
 
                 # cv.imshow("", self._croppedSelf)
                 # cv.waitKeyEx(0)
