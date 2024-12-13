@@ -10,6 +10,7 @@ from ScreenHandler import SH
 from InputHandler import IH
 from MenuHandler import MH
 from Chessboard import Chessboard
+import playsound
 
 class ChessHelper:
         """
@@ -19,18 +20,23 @@ class ChessHelper:
 
         def Test(self):
 
-                result = SH.InitializeChessboard(f"screenshot1.png")
+                result = SH.InitializeChessboard(f"screenshot9.png")
+
+                cv.imshow("", result[0])
+                cv.imwrite("grayscale.png", result[0])
+                cv.waitKeyEx(0)
 
                 if(result == None):
                         raise Exception("There is no chessboard!")
 
                 CB = Chessboard(result[0], result[1], result[2], result[3])
 
-                cv.imshow("", CB.img)
+                cv.imshow("", cv.threshold(CB.img, 128, 255, cv.THRESH_BINARY)[1])
+                cv.waitKeyEx(0)
 
                 CB.DeterminePieces()
 
-                IH.Start()
+                # IH.Start()
 
                 pass
 

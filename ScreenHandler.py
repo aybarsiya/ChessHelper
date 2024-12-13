@@ -226,6 +226,7 @@ class ScreenHandler:
                 """
                         This function uses template (and possibly matching mask) image(s) to find the best probability value and the location on the main image.
                 """
+
                 _, bestValue, _, bestLocation = cv.minMaxLoc(cv.matchTemplate(img, tempImg, cv.TM_CCORR_NORMED, None, maskImg))
                 return (bestValue, bestLocation)
 
@@ -239,6 +240,13 @@ class ScreenHandler:
                 return cv.cvtColor(np.array(IG.grab(bbox).convert("RGB"))[:, :, ::-1], cv.COLOR_BGR2GRAY)
 
 SH = ScreenHandler()
+
+cv.imshow("", cv.threshold(PieceImgs[0][3].processedImgBlack, 128, 255, cv.THRESH_BINARY)[1])
+cv.waitKeyEx(0)
+cv.imshow("", cv.threshold(PieceImgs[1][3].processedImgWhite, 128, 255, cv.THRESH_BINARY)[1])
+cv.waitKeyEx(0)
+
+print(SH._GetBestValues(cv.threshold(PieceImgs[0][3].processedImgBlack, 128, 255, cv.THRESH_BINARY)[1], cv.threshold(PieceImgs[1][3].processedImgWhite, 128, 255, cv.THRESH_BINARY)[1])[0])
 
 # https://pyimagesearch.com/2015/01/26/multi-scale-template-matching-using-python-opencv/
 # https://stackoverflow.com/questions/35642497/python-opencv-cv2-matchtemplate-with-transparency

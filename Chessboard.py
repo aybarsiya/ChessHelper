@@ -34,45 +34,43 @@ class _Square():
                 self.piece = piece
                 pass
 
-        def DeterminePiece(self, scale: float, algoScale: float):
-
-                # scale -= 0.5
-                # scale = algoScale
+        def DeterminePiece(self, scale: float, algoScale: float, black: bool):
 
                 bestResult = 0.0
                 bestColour = 0.0
                 bestType = 0.0
 
-                for i in range(2):
-                        result = SH._GetBestValues(
-                                                                                        # scale,
-                                                                                        self.img,
-                                                                                        PieceImgs[2][i]._croppedSelf,
-                                                                                        )[0]
+                i = 0
+                if(black): i = 1
 
-                        if(result > bestResult and result > 0.995):
-                                bestResult = result
-                                bestColour = 2
-                                bestType = i
+                result = SH._GetBestValues(
+                                                                                self.img,
+                                                                                PieceImgs[2][i]._croppedSelf,
+                                                                                )[0]
 
-                if(bestResult != 0.0):
+                if(result > 0.989):
                         return
 
-                for x in range(2):
-                        for y in range(5):
+                imgToCompare: cv.typing.MatLike
 
+
+
+                for y in range(5):
+                        for x in range(2):
+
+
+                                if(black): imgToCompare = PieceImgs[x][y + 1].processedImgBlack
+                                else: imgToCompare = PieceImgs[x][y + 1].processedImgWhite
 
 
                                 result = SH._GetBestValues(
-                                                                                                # scale,
                                                                                                 self.img,
-                                                                                                PieceImgs[x][y + 1]._croppedSelf,
-                                                                                                PieceImgs[x][y + 1]._croppedMask,
+                                                                                                imgToCompare,
                                                                                                 )[0]
 
                                 print(result, PieceColourEnum.Stringify(x), PieceTypeEnum.Stringify(y + 1))
 
-                                if(result > bestResult and (bestResult + ((bestResult / 100) / 4)) < result):
+                                if(result > 0.9 and result > bestResult and (bestResult + ((bestResult / 100) / 2)) < result):
                                         bestResult = result
                                         bestColour = x
                                         bestType = y + 1
@@ -80,24 +78,45 @@ class _Square():
                                         print("-----------------found piece", PieceColourEnum.Stringify(x), PieceTypeEnum.Stringify(y + 1))
 
                 for x in range(2):
+
+                        if(black): imgToCompare = PieceImgs[x][0].processedImgBlack
+                        else: imgToCompare = PieceImgs[x][0].processedImgWhite
+
                         result = SH._GetBestValues(
                                                                                 # scale,
                                                                                 self.img,
-                                                                                PieceImgs[x][0]._croppedSelf,
-                                                                                PieceImgs[x][0]._croppedMask,
+                                                                                imgToCompare,
+                                                                                # PieceImgs[x][0]._croppedMask,
                                                                                 )[0]
 
                         print(result)
-                        if(result > 0.895 and result > bestResult):
-                                #  and (bestResult + ((bestResult / 100) / 4)) > result
-                                bestResult = result
-                                bestColour = x
-                                bestType = 0
 
-                                print("-----------------found pawn", PieceColourEnum.Stringify(x), PieceTypeEnum.Stringify(0))
+                        if(x == 0):
+                                if(result > 0.985 and result > bestResult):
+                                        #  and (bestResult + ((bestResult / 100) / 4)) > result
+                                        bestResult = result
+                                        bestColour = x
+                                        bestType = 0
+
+                                        print("-----------------found pawn", PieceColourEnum.Stringify(x), PieceTypeEnum.Stringify(0))
+                        else:
+                                if(result > 0.965 and result > bestResult):
+                                        #  and (bestResult + ((bestResult / 100) / 4)) > result
+                                        bestResult = result
+                                        bestColour = x
+                                        bestType = 0
+
+                                        print("-----------------found pawn", PieceColourEnum.Stringify(x), PieceTypeEnum.Stringify(0))
 
                 print(bestResult)
                 self.piece = _Piece(bestColour, bestType)
+
+        def DetPieces():
+
+
+
+
+                pass
 
 
 class Chessboard():
@@ -121,6 +140,7 @@ class Chessboard():
 
                 # self.PrintChessBoard()
 
+                # img = cv.bilateralFilter(img, 3, 80, 80)
                 img = SH._GetUpscaledImg(img, scale)
 
                 self.SetImg(img)
@@ -151,7 +171,9 @@ class Chessboard():
                                 self.squares[i][k].img = self.img[(i * squareWidth):((i + 1) * squareWidth), (k * squareWidth):((k + 1) * squareWidth)]
 
         def DeterminePieces(self):
+                black = False
                 for i in range(len(self.squares)):
                         for k in range(len(self.squares[i])):
-                                self.squares[i][k].DeterminePiece(self.scale, self.algoScale)
+                                self.squares[i][k].DeterminePiece(self.scale, self.algoScale, black)
                                 print(",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,", self.squares[i][k].piece())
+                                black = not black
