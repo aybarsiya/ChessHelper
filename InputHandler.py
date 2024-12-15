@@ -10,6 +10,7 @@
 from pynput import keyboard
 from pynput import mouse
 from google.cloud import speech
+
 from Enums import MS_PER_FRAME
 from threading import Thread, Lock
 from time import sleep
@@ -118,6 +119,7 @@ class speechToText():
 #         # Release PortAudio system resources (6)
 #         p.terminate()
 
+# https://stackoverflow.com/questions/35344649/reading-input-sound-signal-using-python
 # https://pypi.org/project/pynput/
 # https://raspberrypi.stackexchange.com/questions/55431/read-keyboad-input-from-background-process
 # https://docs.python.org/3/library/threading.html
