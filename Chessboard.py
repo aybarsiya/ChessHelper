@@ -15,7 +15,9 @@ import cv2 as cv
 from ScreenHandler import SH
 
 class _Piece():
-
+        """
+                This class keeps the piece information of a square.
+        """
         colour: int
         type: int
 
@@ -26,7 +28,10 @@ class _Piece():
         def __call__(self): return (PieceColourEnum.Stringify(self.colour), PieceTypeEnum.Stringify(self.type))
 
 class _Square():
-
+        """
+                This class keeps the piece and last taken image variables and does calculations to determine the piece
+                that resides inside the square.
+        """
         piece: _Piece
         img: cv.typing.MatLike
 
@@ -34,8 +39,14 @@ class _Square():
                 self.piece = piece
                 pass
 
-        def DeterminePiece(self, black: bool):
+        def UpdateImage(self, img: cv.typing.MatLike):
+                self.img = img
 
+
+        def DeterminePiece(self, black: bool):
+                """
+                        Finds what piece is located inside the square.
+                """
                 bestResult = 0.0
                 bestColour = 0.0
                 bestType = 0.0
@@ -50,6 +61,7 @@ class _Square():
 
                 print(result)
                 if(result > 0.99):
+                        self.piece = _Piece()
                         return
 
                 imgToCompare: cv.typing.MatLike
@@ -121,7 +133,9 @@ class _Square():
 
 
 class Chessboard():
-
+        """
+                This keeps all of the important information of a chessboard on the screen.
+        """
         initialized = True
         squares = [[_Square]]
 
@@ -178,7 +192,9 @@ class Chessboard():
                 squareWidth = round(self.img.shape[:2][0] / 8)
                 for i in range(8):
                         for k in range(8):
-                                self.squares[i][k].img = self.img[(i * squareWidth):((i + 1) * squareWidth), (k * squareWidth):((k + 1) * squareWidth)]
+                                croppedSquareImg = self.img[(i * squareWidth):((i + 1) * squareWidth), (k * squareWidth):((k + 1) * squareWidth)]
+                                self.squares[i][k].UpdateImage(croppedSquareImg)
+                print("pieceimagesset")
 
         def DeterminePieces(self):
                 black = False

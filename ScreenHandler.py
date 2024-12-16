@@ -3,22 +3,6 @@
 
         This module is responsible for making several operations using image processing libraries.
 
-        Features:
-        - Taking screenshots of the main screen
-                * Only supports main screen in a multi screen setup
-        - Determining if there is a default "chess.com" chessboard on the screen
-        - If there is a chessboard on the screen
-                - Determine chessboard's scale on pixel values
-                - Determine the exact coordinates of the chessboard on the screen using the determined scale
-        - If there is no chessboard on the screen
-                - Acknowledging the situation using some "magic numbers" (lovely!)
-                - Early cancellation of the algorithm
-
-        WIP Features:
-        - Returning 64 equal sized images of the found chessboard on the screen
-                - Will be used for populating the Chessboard module's 2D "Square"s array
-
-
         Aybars Ay
         2024
 """
@@ -38,7 +22,9 @@ class ScreenHandler:
 
         @staticmethod
         def InitializeChessboard():
-
+                """
+                        This function takes a screenshot of the screen to try to find a chessboard.
+                """
                 screenImg = ScreenHandler._TakeScreenshot()
 
                 scrShape = screenImg.shape[:2]
@@ -104,7 +90,9 @@ class ScreenHandler:
 
         @staticmethod
         def _GetChessboardScale(maxScale: float, screenImg: cv.typing.MatLike):
-
+                """
+                        This function tries to find a chess piece on the screen to find the scale of the chessboard.
+                """
                 def _IsDown(_scale: float, _scaleStep: float, _screenImg: cv.typing.MatLike, _tempImg: cv.typing.MatLike):
 
                         downResult = ScreenHandler._GetScaledImgBestValues(

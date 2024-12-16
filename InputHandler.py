@@ -1,7 +1,7 @@
 """
         InputHandler Module
 
-        This module is responsible for real time keyboard and mouse I/O.
+        This module is responsible for real time keyboard, speech and mouse I/O.
 
         Aybars Ay
         2024
@@ -19,12 +19,16 @@ from threading import Thread, Lock
 from time import sleep
 
 class _Speech():
-
+        """
+                This class is responsible of requesting and receiving of speech to text operations.
+        """
         latestResponseText = ""
         responseTextAvailable = False
 
         def GetAudioResponse(self, audioData: bytes) -> speech.RecognizeResponse:
-
+                """
+                        Returns a string which contains what was said in the microphone recording, by getting a response from google cloud speech api.
+                """
                 client = speech.SpeechClient()
 
                 audio = speech.RecognitionAudio(content=audioData)
@@ -53,7 +57,9 @@ class _Speech():
                 return self.latestResponseText
 
 class _Microphone():
-
+        """
+                This class is responsible for recording audio from the default microphone on the device.
+        """
         listening = False
         latestData: bytes
         dataAvailable = False
@@ -105,8 +111,9 @@ class _Microphone():
         pass
 
 class _Mouse():
-
-
+        """
+                This class makes moves on screen.
+        """
         def MakeMove(self, pos1: tuple[int, int], pos2: tuple[int, int]):
 
                 print ("making move")
@@ -136,7 +143,9 @@ class _Mouse():
         pass
 
 class _Keyboard():
-
+        """
+                This class is responsible for handling the whole program by getting threaded inputs from the keyboard.
+        """
         _listening = True
         _microphoneOn = False
         _initializeChessBoard = False
@@ -174,7 +183,9 @@ class _Keyboard():
         pass
 
 class _InputHandler():
-
+        """
+                This class is the main handler of all I/O classes.
+        """
         _keyboard: _Keyboard
         _mouse: _Mouse
         _microphone: _Microphone

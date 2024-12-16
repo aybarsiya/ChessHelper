@@ -1,5 +1,5 @@
 """
-    This is the main class of the whole program. Main loops are initialized and handled here.
+    This is the main class of the whole program. Main loop and instances of classes are initialized and handled here.
 """
 
 from threading import Thread
@@ -26,7 +26,9 @@ class ChessHelper:
         CB: Chessboard = None
 
         def Controller(self):
-
+                """
+                        Main loop of the program. Does operations based on the outputs of the InputHandler.
+                """
                 while IH._keyboard._listening:
                         sleep(MS_PER_FRAME / 1000)
 
@@ -44,11 +46,14 @@ class ChessHelper:
                                 Thread(target = ChessHelper._PlaySound, args = ["ready"]).start()
 
                         if (IH._speech.responseTextAvailable and (isinstance(self.CB, Chessboard) and self.CB.initialized)):
-                                self._MakeMove(IH._speech.GetResponse())
+                                resp = IH._speech.GetResponse()
+                                Thread(target = self._MakeMove, args = [resp,]).start()
                                 pass
 
         def _MakeMove(self, moveText: str):
-
+                """
+                        This method tries to make a move on the chessboard with the speect-to-text result.
+                """
                 if(len(moveText) != 4):
                         Thread(target = ChessHelper._PlaySound, args = ["invalid",]).start()
                         return
@@ -111,37 +116,42 @@ class ChessHelper:
 
                 print(x1, y1, x2, y2)
 
-                cv.imshow("", self.CB.img)
-                cv.waitKeyEx(0)
-                sleep(0.5)
+                # cv.imshow("", self.CB.img)
+                # cv.waitKeyEx(0)
+                # sleep(0.5)
 
                 print(self.CB.squares[y1][x1].piece(), self.CB.squares[y2][x2].piece())
                 print(self.CB.squares[y1][x1].piece.colour, self.CB.squares[y2][x2].piece.colour)
 
-                # if(self.CB.squares[y1][x1].piece.colour != self.CB.squares[y2][x2].piece.colour):
-                pieceEx = int(150 * self.CB.scale / 100)
-                print("%%%%%%%%%%%%%%%%%%%%%%%", self.CB.scale)
-                print(self.CB.pos, (150 * self.CB.scale / 100))
-                pos1 = (int(self.CB.pos[0] + (x1 * pieceEx) + (pieceEx / 2)), int(self.CB.pos[1] + (y1 * pieceEx) + (pieceEx / 2)))
-                pos2 = (int(self.CB.pos[0] + (x2 * pieceEx) + (pieceEx / 2)), int(self.CB.pos[1] + (y2 * pieceEx) + (pieceEx / 2)))
-                IH._mouse.MakeMove(pos1, pos2)
-                sleep(0.5)
-                newImage = cv.threshold(SH._TakeScreenshot(), 128, 255, cv.THRESH_BINARY)[1]
-                newImage = SH._CropImage(newImage, self.CB.pos, self.CB.width)
-                newImage = SH._GetUpscaledImg(newImage, self.CB.scale)
-                cv.imshow("", newImage)
-                cv.waitKeyEx(0)
+                if(self.CB.squares[y1][x1].piece.colour != self.CB.squares[y2][x2].piece.colour):
+                        pieceEx = int(150 * self.CB.scale / 100)
+                        print("%%%%%%%%%%%%%%%%%%%%%%%", self.CB.scale)
+                        print(self.CB.pos, (150 * self.CB.scale / 100))
+                        pos1 = (int(self.CB.pos[0] + (x1 * pieceEx) + (pieceEx / 2)), int(self.CB.pos[1] + (y1 * pieceEx) + (pieceEx / 2)))
+                        pos2 = (int(self.CB.pos[0] + (x2 * pieceEx) + (pieceEx / 2)), int(self.CB.pos[1] + (y2 * pieceEx) + (pieceEx / 2)))
+                        IH._mouse.MakeMove(pos1, pos2)
+                        sleep(0.5)
+                        newImage = cv.threshold(SH._TakeScreenshot(), 128, 255, cv.THRESH_BINARY)[1]
+                        newImage = SH._CropImage(newImage, self.CB.pos, self.CB.width)
+                        newImage = SH._GetUpscaledImg(newImage, self.CB.scale)
+                        # cv.imshow("", newImage)
+                        # cv.waitKeyEx(0)
 
-                if(SH._CompareChange(self.CB.img, newImage)):
-                        Thread(target = ChessHelper._PlaySound, args = ["invalid",]).start()
+                        if(SH._CompareChange(self.CB.img, newImage)):
+                                Thread(target = ChessHelper._PlaySound, args = ["invalid",]).start()
+                        else:
+                                self.CB.UpdateBoard(newImage)
+                                Thread(target = ChessHelper._PlaySound, args = ["mademove",]).start()
+                                print("successfully made a move")
                 else:
-                        self.CB.UpdateBoard(newImage)
-                        Thread(target = ChessHelper._PlaySound, args = ["mademove",]).start()
-                        print("successfully made a move")
+                        Thread(target = ChessHelper._PlaySound, args = ["invalid",]).start()
 
                 pass
 
         def _PlaySound(name: str):
+                """
+                        Plays a sound based on the outcome of operations.
+                """
                 path = os.getcwd() + rf"\{name}.mp3"
 
                 try:
