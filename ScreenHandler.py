@@ -37,10 +37,9 @@ from threading import Thread
 class ScreenHandler:
 
         @staticmethod
-        def InitializeChessboard(fileName):
+        def InitializeChessboard():
 
                 screenImg = ScreenHandler._TakeScreenshot()
-                screenImg = cv.imread(fileName, cv.IMREAD_GRAYSCALE)
 
                 scrShape = screenImg.shape[:2]
                 lowestWidth = int()
@@ -93,9 +92,15 @@ class ScreenHandler:
 
                 croppedImg = screenImg[result[1][1]:result[1][1] + realWidth, result[1][0]:result[1][0] + realWidth]
 
+                croppedImg = ScreenHandler._CropImage(screenImg, result[1], realWidth)
                 # return (round(perf_counter() - startTime, 6), result, realWidth, scale, screenImg[result[1][1]:result[1][1] + realWidth, result[1][0]:result[1][0] + realWidth])
                 # return (scale, screenImg[result[1][1]:result[1][1] + realWidth, result[1][0]:result[1][0] + realWidth], result[1])
-                return (croppedImg, scale, result[1], algoScale)
+                return (croppedImg, scale, result[1], realWidth)
+
+        @staticmethod
+        def _CropImage(img: cv.typing.MatLike, point: cv.typing.Point, width: int):
+                return img[point[1]:point[1] + width, point[0]:point[0] + width]
+
 
         @staticmethod
         def _GetChessboardScale(maxScale: float, screenImg: cv.typing.MatLike):
@@ -241,12 +246,12 @@ class ScreenHandler:
 
 SH = ScreenHandler()
 
-cv.imshow("", cv.threshold(PieceImgs[0][3].processedImgBlack, 128, 255, cv.THRESH_BINARY)[1])
-cv.waitKeyEx(0)
-cv.imshow("", cv.threshold(PieceImgs[1][3].processedImgWhite, 128, 255, cv.THRESH_BINARY)[1])
-cv.waitKeyEx(0)
+# cv.imshow("", cv.threshold(PieceImgs[0][3].processedImgBlack, 128, 255, cv.THRESH_BINARY)[1])
+# cv.waitKeyEx(0)
+# cv.imshow("", cv.threshold(PieceImgs[1][3].processedImgWhite, 128, 255, cv.THRESH_BINARY)[1])
+# cv.waitKeyEx(0)
 
-print(SH._GetBestValues(cv.threshold(PieceImgs[0][3].processedImgBlack, 128, 255, cv.THRESH_BINARY)[1], cv.threshold(PieceImgs[1][3].processedImgWhite, 128, 255, cv.THRESH_BINARY)[1])[0])
+# print(SH._GetBestValues(cv.threshold(PieceImgs[0][3].processedImgBlack, 128, 255, cv.THRESH_BINARY)[1], cv.threshold(PieceImgs[1][3].processedImgWhite, 128, 255, cv.THRESH_BINARY)[1])[0])
 
 # https://pyimagesearch.com/2015/01/26/multi-scale-template-matching-using-python-opencv/
 # https://stackoverflow.com/questions/35642497/python-opencv-cv2-matchtemplate-with-transparency

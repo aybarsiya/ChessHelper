@@ -1,0 +1,1 @@
+gcloud auth application-default login is needed in vscode for some reason (gcloud init, isn't enough by itself)

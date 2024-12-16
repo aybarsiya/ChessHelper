@@ -9,74 +9,204 @@
 
 from pynput import keyboard
 from pynput import mouse
+
+import pyaudio
+import wave
 from google.cloud import speech
 
 from Enums import MS_PER_FRAME
 from threading import Thread, Lock
 from time import sleep
 
-class _InputHandler():
+class _Speech():
 
-        listening = True
-        update = False
+        latestResponseText = ""
+        responseTextAvailable = False
+
+        def GetAudioResponse(self, audioData: bytes) -> speech.RecognizeResponse:
+
+                client = speech.SpeechClient()
+
+                audio = speech.RecognitionAudio(content=audioData)
+                config = speech.RecognitionConfig(
+                                                encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+                                                sample_rate_hertz=16000,
+                                                language_code="en-US",
+                                                )
+
+                response = client.recognize(config=config, audio=audio)
+                print ("speech to text request sent")
+
+                responseText = ""
+                for result in response.results:
+                        # The first alternative is the most likely one for this portion.
+                        responseText += result.alternatives[0].transcript
+
+                self.latestResponseText = responseText.replace(" ", "")
+                self.responseTextAvailable = True
+                print ("speech to text response received")
+
+                print(self.latestResponseText)
+
+        def GetResponse(self):
+                self.responseTextAvailable = False
+                return self.latestResponseText
+
+class _Microphone():
+
+        listening = False
+        latestData: bytes
+        dataAvailable = False
+
+        _sample_format = pyaudio.paInt16
+        _channels = 1
+        _rate = 16000
+        _chunk: int
+
+        def __init__(self):
+                self._chunk = int(self._rate / 20)
+
+        def Listen(self):
+                self.listening = True
+                p = pyaudio.PyAudio()
+
+                stream = p.open(format=self._sample_format,
+                                        channels=self._channels,
+                                        rate=self._rate,
+                                        frames_per_buffer=self._chunk,
+                                        input=True)
+
+                frames = []
+
+                print ("microphone on")
+                while self.listening:
+
+                        data = stream.read(self._chunk)
+                        frames.append(data)
+                        sleep(1 / 800)
+
+                for i in range(2):
+                        data = stream.read(self._chunk)
+                        frames.append(data)
+                        sleep(1 / 800)
+                print ("microphone off")
+
+                stream.stop_stream()
+                stream.close()
+                p.terminate()
+
+                self.latestData = b''.join(frames)
+                self.dataAvailable = True
+
+        def GetData(self):
+                self.dataAvailable = False
+                return self.latestData
+
+        pass
+
+class _Mouse():
+
+
+        def MakeMove(self, pos1: tuple[int, int], pos2: tuple[int, int]):
+
+                print ("making move")
+                print(pos1, pos2)
+                mouseController = mouse.Controller()
+
+                sleep(MS_PER_FRAME / 1000)
+
+                mouseController.position = pos1
+                sleep(MS_PER_FRAME / 1000)
+
+                mouseController.press(mouse.Button.left)
+
+                sleep(MS_PER_FRAME / 1000)
+
+                mouseController.position = pos2
+
+                sleep(MS_PER_FRAME / 1000)
+
+                mouseController.release(mouse.Button.left)
+
+                sleep(MS_PER_FRAME / 1000)
+
+                mouseController.position = (480, 1079)
+                print ("finished making move")
+
+        pass
+
+class _Keyboard():
+
+        _listening = True
+        _microphoneOn = False
+        _initializeChessBoard = False
 
         def Start(self):
                 self._listener = keyboard.Listener(on_press = self._KeyboardPress, on_release = self._KeyboardRelease)
                 self._listener.start()
-                Thread(target = self.Loop).start()
 
-        def Loop(self):
-                while(self.listening):
-                        sleep(0.16)
-                        print("on")
+                print("keyboard on")
 
 
         def Stop(self):
                 self._listener.stop()
+                self._listening = False
 
-        @staticmethod
-        def _KeyboardPress(key: keyboard.KeyCode):
 
-                print(key)
+        def _KeyboardPress(self, key: keyboard.KeyCode):
+
+                if ((not self._microphoneOn) and key == keyboard.Key.scroll_lock):
+                        self._microphoneOn = True
+
+                elif ((not self._initializeChessBoard) and key == keyboard.Key.ctrl_r):
+                        self._initializeChessBoard = True
+
 
         def _KeyboardRelease(self, key: keyboard.KeyCode):
                 print('{0} released'.format(key))
-                if key == keyboard.Key.esc:
-                        # Stop listener
-                        self.listening = False
-                        self._listener.stop()
-                        return False
-                elif key == keyboard.Key.enter:
-                        self.update = True
+                if (key == keyboard.Key.esc):
+                        self.Stop()
+
+                elif (key == keyboard.Key.scroll_lock):
+                        self._microphoneOn = False
 
 
         pass
+
+class _InputHandler():
+
+        _keyboard: _Keyboard
+        _mouse: _Mouse
+        _microphone: _Microphone
+        _speech: _Speech
+
+        def __init__(self):
+
+
+                self._keyboard = _Keyboard()
+                self._mouse = _Mouse()
+                self._microphone = _Microphone()
+                self._speech = _Speech()
+
+                self._keyboard.Start()
+
+                Thread(target = self.Loop).start()
+
+        def Loop(self):
+                while(self._keyboard._listening):
+                        sleep(MS_PER_FRAME / 1000)
+
+                        if ((not self._microphone.listening) and (not self._microphone.dataAvailable) and self._keyboard._microphoneOn):
+                                Thread(target = self._microphone.Listen).start()
+
+                        if ((not self._keyboard._microphoneOn) and self._microphone.listening):
+                                self._microphone.listening = False
+
+                        if(self._microphone.dataAvailable):
+                                microphoneData = self._microphone.GetData()
+                                Thread(target = self._speech.GetAudioResponse, args = [microphoneData, ]).start()
 
 IH = _InputHandler()
-
-class speechToText():
-
-        def run_quickstart(self):
-                # Instantiates a client
-                client = speech.SpeechClient()
-
-                # The name of the audio file to transcribe
-                gcs_uri = "gs://cloud-samples-data/speech/brooklyn_bridge.raw"
-
-                audio = speech.RecognitionAudio(uri=gcs_uri)
-
-                config = speech.RecognitionConfig(encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16, sample_rate_hertz=16000, language_code="en-US",)
-
-                # Detects speech in the audio file
-                response = client.recognize(config=config, audio=audio)
-
-                for result in response.results:
-                        print(f"Transcript: {result.alternatives[0].transcript}")
-
-        def test():
-                client = speech.AdaptationAsyncClient()
-
-        pass
 
 # """PyAudio Example: Play a wave file (callback version)."""
 

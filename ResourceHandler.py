@@ -73,6 +73,9 @@ class _PieceImg(_TempImg):
         processedImgWhite: cv.typing.MatLike
         processedImgBlack: cv.typing.MatLike
 
+        binaryImgWhite: cv.typing.MatLike
+        binaryImgBlack: cv.typing.MatLike
+
         def __init__(self, colour: int = PieceColourEnum.EMPTY, pieceType: int = PieceTypeEnum.EMPTY):
 
                 self.colour = colour
@@ -114,6 +117,9 @@ class _PieceImg(_TempImg):
 
                 self.processedImgWhite = ((_whiteTileImg * (1.0 - self._croppedAlphaChannelNormed) + self._croppedSelf * self._croppedAlphaChannelNormed)).astype(np.uint8)
                 self.processedImgBlack = ((_blackTileImg * (1.0 - self._croppedAlphaChannelNormed) + self._croppedSelf * self._croppedAlphaChannelNormed)).astype(np.uint8)
+
+                self.binaryImgWhite = cv.threshold(self.processedImgWhite, 128, 255, cv.THRESH_BINARY)[1]
+                self.binaryImgBlack = cv.threshold(self.processedImgBlack, 128, 255, cv.THRESH_BINARY)[1]
                 # cv.imshow("", self.processedImgWhite)
                 # cv.waitKeyEx(0)
                 # cv.imshow("", self.processedImgBlack)
@@ -150,6 +156,9 @@ def _SetupPieceImgs():
         for x in range(2):
                 for y in range(6):
                         pieceImgs[x][y]._SetupFinalImage(pieceImgs[2][0]._self, pieceImgs[2][1]._self)
+
+        for y in range(2):
+                pieceImgs[2][y]._SetupFinalImage(pieceImgs[2][0]._self, pieceImgs[2][1]._self)
 
         for x in range(len(pieceImgs)):
                 for y in range(len(pieceImgs[x])):
