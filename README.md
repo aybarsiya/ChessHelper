@@ -2,7 +2,7 @@
 
 This is a Python program, that allows users to play chess with voice commands. This is an accessibility tool for users with limited physical interaction with the computer, translating from verbal commands to mouse and keyboard inputs, with on screen automatic chessboard detection capabilities.
 
-[![Demo](https://www.youtube.com/watch?v=wTPUXg5qmGw/0.jpg)](https://www.youtube.com/watch?v=wTPUXg5qmGw)
+[Demo](https://www.youtube.com/watch?v=wTPUXg5qmGw)
 
 ## The program can:
   -	Find a chessboard on the screen (only supports Chess.com’s assets for now but can be extended, classes’ structures are designed for this)
